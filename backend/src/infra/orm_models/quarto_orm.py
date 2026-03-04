@@ -1,11 +1,11 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import String, Enum as SQLEnum
 from backend.src.domain.models.quarto import StatusQuarto, Quarto
-
+from backend.src.infra.database import Base
 
 # Base declarativa padrão do SQLAlchemy
-class Base(DeclarativeBase):
-    pass
+#class Base(DeclarativeBase):
+    #pass
 
 
 class QuartoORM(Base):

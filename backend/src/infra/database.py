@@ -1,14 +1,19 @@
 import os
+from dotenv import load_dotenv
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
 
+
 # Em produção, isso viria de variáveis de ambiente (.env)
+load_dotenv()
 # postgresql+asyncpg é o driver assíncrono super rápido para Postgres
 DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+asyncpg://usuario:senha@localhost:5432/sgh_hotel"
+    "DATABASE_URL_ASYNC",
 )
+if not DATABASE_URL:
+    raise ValueError("A variável DATABASE_URL_ASYNC não foi encontrada no .env")
+
 
 # 1. O Motor (Engine)
 # Ele gerencia o pool de conexões com o banco de dados.
