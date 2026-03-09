@@ -10,6 +10,7 @@ from alembic import context
 # 1. SUAS IMPORTAÇÕES AQUI
 from backend.src.infra.database import Base
 from backend.src.infra.orm_models.quarto_orm import QuartoORM
+from backend.src.infra.orm_models.cliente_orm import ClienteORM
 
 import os
 from dotenv import load_dotenv
