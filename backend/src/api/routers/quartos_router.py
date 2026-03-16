@@ -21,7 +21,7 @@ async def criar_quarto(
         repo: QuartoRepository = Depends(get_quarto_repo)
 ):
     """Cria um novo quarto no sistema."""
-    novo_quarto = Quarto(numero=payload.numero, andar=payload.andar)
+    novo_quarto = Quarto(numero=payload.numero, andar=payload.andar, tipo_quarto_id=payload.tipo_quarto_id)
 
     quarto_salvo = await repo.salvar(novo_quarto)
     return quarto_salvo

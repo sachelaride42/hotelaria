@@ -12,6 +12,7 @@ from backend.src.infra.database import Base
 from backend.src.infra.orm_models.quarto_orm import QuartoORM
 from backend.src.infra.orm_models.cliente_orm import ClienteORM
 from backend.src.infra.orm_models.reserva_orm import ReservaORM
+from backend.src.infra.orm_models.tipo_quarto_orm import TipoDeQuartoORM
 
 import os
 from dotenv import load_dotenv

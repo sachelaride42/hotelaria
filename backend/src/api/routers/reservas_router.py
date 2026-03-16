@@ -21,13 +21,19 @@ router = APIRouter(prefix="/reservas", tags=["Reservas"])
 def get_reserva_repo(session: AsyncSession = Depends(get_db_session)) -> ReservaRepository:
     return ReservaRepository(session)
 
+def get_tipo_quarto_repo(session: AsyncSession = Depends(get_db_session)) -> TipoQuartoRepository:
+    return TipoQuartoRepository(session)
+
 @router.post("/", response_model=ReservaOutput, status_code=status.HTTP_201_CREATED)
 async def criar_reserva(
         payload: ReservaCriarInput,
-        repo: ReservaRepository = Depends(get_reserva_repo),
-        tipo_quarto_repo: TipoQuartoRepository = Depends(get_tipo_quarto_repo),
-        quarto_repo: QuartoRepository = Depends(get_quarto_repo)  # ← NOVO
+        session: AsyncSession = Depends(get_db_session),
 ):
+
+    repo = ReservaRepository(session)
+    tipo_quarto_repo = TipoQuartoRepository(session)
+    quarto_repo = QuartoRepository(session)  # ← NOVO
+
     try:
         # 1. Busca o tipo de quarto (valida existência e obtém o preço)
         tipo_quarto = await tipo_quarto_repo.buscar_por_id(payload.tipo_quarto_id)

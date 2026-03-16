@@ -70,6 +70,7 @@ class QuartoRepository:
 
     async def contar_por_tipo(self, tipo_quarto_id: int) -> int:
         """Conta quantos quartos físicos existem de um determinado tipo."""
+        # O teste desse metodo esta feito em test_tipo_quarto_repository.py
         stmt = select(func.count(QuartoORM.id)).where(QuartoORM.tipo_quarto_id == tipo_quarto_id)
         resultado = await self.session.execute(stmt)
         return resultado.scalar_one()

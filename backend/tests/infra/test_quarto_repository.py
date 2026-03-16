@@ -1,13 +1,26 @@
+from decimal import Decimal
+
 import pytest
+import pytest_asyncio
+
 from backend.src.domain.models.quarto import Quarto, StatusQuarto
+from backend.src.domain.models.tipo_quarto import TipoDeQuarto
 from backend.src.infra.repositories.quarto_repository import QuartoRepository, ConcorrenciaQuartoError
+from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepository
 
 from backend.tests.conftest import TestingSessionLocal
 
+@pytest_asyncio.fixture
+async def tipo_quarto_padrao(db_session):
+    """Fixture auxiliar para criar um tipo de quarto antes dos quartos."""
+    repo = TipoQuartoRepository(db_session)
+    tipo = TipoDeQuarto(nome="Casal", precoBaseDiaria=Decimal("150.00"), capacidade=2)
+    return await repo.salvar(tipo)
+
 @pytest.mark.asyncio
-async def test_salvar_novo_quarto(db_session):
+async def test_salvar_novo_quarto(db_session, tipo_quarto_padrao):
     repo = QuartoRepository(db_session)
-    quarto = Quarto(numero="101", andar=1)
+    quarto = Quarto(numero="101", andar=1, tipo_quarto_id=tipo_quarto_padrao.id)
 
     quarto_salvo = await repo.salvar(quarto)
 
@@ -15,11 +28,12 @@ async def test_salvar_novo_quarto(db_session):
     assert quarto_salvo.versao == 1  # A versão inicial deve ser sempre 1 no banco
 
 
+
 @pytest.mark.asyncio
-async def test_atualizar_quarto_incrementa_versao(db_session):
+async def test_atualizar_quarto_incrementa_versao(db_session, tipo_quarto_padrao):
     """Garante que o SQLAlchemy atualiza a versão automaticamente ao salvar."""
     repo = QuartoRepository(db_session)
-    quarto = await repo.salvar(Quarto(numero="202", andar=2))
+    quarto = await repo.salvar(Quarto(numero="202", andar=2, tipo_quarto_id=tipo_quarto_padrao.id))
 
     # Simulando o check-in
     quarto.atualizarStatus(StatusQuarto.OCUPADO)
@@ -30,14 +44,14 @@ async def test_atualizar_quarto_incrementa_versao(db_session):
 
 
 @pytest.mark.asyncio
-async def test_optimistic_locking_impede_sobrescrita_simultanea(db_session):
+async def test_optimistic_locking_impede_sobrescrita_simultanea(db_session, tipo_quarto_padrao):
     """
     Simula exatamente duas requisições web concorrentes.
     Cada requisição abre sua própria sessão com o banco de dados.
     """
     # 1. SETUP: Criamos o quarto usando a sessão padrão do teste
     repo_setup = QuartoRepository(db_session)
-    quarto_original = await repo_setup.salvar(Quarto(numero="303", andar=3))
+    quarto_original = await repo_setup.salvar(Quarto(numero="303", andar=3, tipo_quarto_id=tipo_quarto_padrao.id))
 
     # 2. SIMULAÇÃO DE CONCORRÊNCIA: Abrimos duas sessões (como se fossem dois navegadores)
     async with TestingSessionLocal() as sessao_A:
