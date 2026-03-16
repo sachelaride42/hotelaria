@@ -18,6 +18,7 @@ class Quarto:
 
     numero: str
     andar: int
+    tipo_quarto_id: int
     status: StatusQuarto = StatusQuarto.LIVRE
 
     # Controle de concorrência (Optimistic Locking)

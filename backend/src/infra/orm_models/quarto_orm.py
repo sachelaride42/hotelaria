@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, Enum as SQLEnum
+from sqlalchemy import String, Enum as SQLEnum, ForeignKey
 from backend.src.domain.models.quarto import StatusQuarto, Quarto
 from backend.src.infra.database import Base
 
@@ -20,6 +20,7 @@ class QuartoORM(Base):
     andar: Mapped[int] = mapped_column(nullable=False)
     status: Mapped[StatusQuarto] = mapped_column(SQLEnum(StatusQuarto), default=StatusQuarto.LIVRE, nullable=False)
 
+    tipo_quarto_id: Mapped[int] = mapped_column(ForeignKey("tipos_quarto.id"), nullable=False)
     # Optimistic Locking
     versao: Mapped[int] = mapped_column(default=1, nullable=False)
 
@@ -35,5 +36,6 @@ class QuartoORM(Base):
             numero=self.numero,
             andar=self.andar,
             status=self.status,
+            tipo_quarto_id=self.tipo_quarto_id,
             versao=self.versao
         )
