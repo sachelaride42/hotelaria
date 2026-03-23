@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 
 class ClienteBase(BaseModel):
@@ -20,5 +20,4 @@ class ClienteOutput(ClienteBase):
     """Como devolvemos o cliente para o Frontend (React/Vue)"""
     id: int
 
-    class Config:
-        from_attributes = True  # Permite que o Pydantic leia nossa Dataclass do Domínio diretamente
+    model_config = ConfigDict(from_attributes=True)  # Permite que o Pydantic leia a Dataclass do Domínio diretamente

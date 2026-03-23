@@ -5,6 +5,7 @@ from datetime import datetime
 from backend.src.domain.services.calculadora_diarias import CalculadoraDeDiarias
 from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.hospedagem_repository import HospedagemRepository
+from backend.src.infra.repositories.item_consumo_repository import ItemConsumoRepository
 from backend.src.infra.repositories.quarto_repository import QuartoRepository, ConcorrenciaQuartoError
 from backend.src.domain.models.hospedagem import Hospedagem
 from backend.src.domain.models.quarto import StatusQuarto

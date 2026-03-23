@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import BaseModel, Field, condecimal
+from pydantic import BaseModel, Field, condecimal, ConfigDict
 from datetime import date, datetime
 from backend.src.domain.models.reserva import StatusReserva
 
@@ -13,7 +13,6 @@ class ReservaCriarInput(BaseModel):
     tipo_quarto_id: int = Field(..., description="ID da Categoria do Quarto (Simples, Suíte, etc)")
     data_entrada: date = Field(..., description="Data prevista de chegada")
     data_saida: date = Field(..., description="Data prevista de saída")
-    # REMOVEMOS o valor_total_previsto daqui!
 
 class ReservaOutput(BaseModel):
     id: int
@@ -25,5 +24,4 @@ class ReservaOutput(BaseModel):
     valor_total_previsto: ValorMonetario
     status: StatusReserva
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -63,3 +63,13 @@ async def atualizar_status_quarto(
     except ConcorrenciaQuartoError as erro_banco:
         # Última barreira de defesa caso alguém salve no exato milissegundo de diferença
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(erro_banco))
+
+@router.get("/{quarto_id}", response_model=QuartoOutput)
+async def buscar_quarto(
+        quarto_id: int,
+        repo: QuartoRepository = Depends(get_quarto_repo)
+):
+    quarto = await repo.buscar_por_id(quarto_id)
+    if not quarto:
+        raise HTTPException(status_code=404, detail="Quarto não encontrado.")
+    return quarto
