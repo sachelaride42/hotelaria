@@ -1,3 +1,7 @@
+import locale
+import sys
+
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
@@ -47,6 +51,16 @@ class ProdutoServicoRepository:
         return orm.to_domain() if orm else None
 
     async def listar_todos(self) -> List[ProdutoServico]:
-        stmt = select(ProdutoServicoORM).order_by(ProdutoServicoORM.descricao)
+        stmt = select(ProdutoServicoORM)
         resultado = await self.session.execute(stmt)
-        return [orm.to_domain() for orm in resultado.scalars().all()]
+        itens = [orm.to_domain() for orm in resultado.scalars().all()]
+
+        nome_locale = "Portuguese_Brazil.1252" if sys.platform == "win32" else "pt_BR.UTF-8"
+        locale.setlocale(locale.LC_COLLATE, nome_locale)
+
+        return sorted(itens, key=lambda p: locale.strxfrm(p.descricao))
+
+
+
+
+
