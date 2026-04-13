@@ -16,6 +16,7 @@ from backend.src.infra.orm_models.tipo_quarto_orm import TipoDeQuartoORM
 from backend.src.infra.orm_models.hospedagem_orm import HospedagemORM
 from backend.src.infra.orm_models.item_consumo_orm import ItemConsumoORM
 from backend.src.infra.orm_models.produto_servico_orm import ProdutoServicoORM
+from backend.src.infra.orm_models.usuario_orm import UsuarioORM
 
 import os
 from dotenv import load_dotenv
