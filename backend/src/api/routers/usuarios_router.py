@@ -5,8 +5,13 @@ from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.usuario_repository import UsuarioRepository, EmailDuplicadoError
 from backend.src.domain.models.usuario import Usuario, Gerente, Recepcionista, TipoUsuario
 from backend.src.api.schemas.usuario_schema import UsuarioCriarInput, UsuarioOutput
+from backend.src.api.dependencies.seguranca import exigir_gerente
 
-router = APIRouter(prefix="/usuarios", tags=["Gestão de Usuários"])
+router = APIRouter(
+    prefix="/usuarios",
+    tags=["Gestão de Usuários"],
+    dependencies=[Depends(exigir_gerente)]
+)
 
 def get_usuario_repo(session: AsyncSession = Depends(get_db_session)) -> UsuarioRepository:
     return UsuarioRepository(session)

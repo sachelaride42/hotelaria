@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 import pytest_asyncio
 
-from backend.src.domain.models.quarto import Quarto, StatusQuarto
+from backend.src.domain.models.quarto import Quarto, StatusOcupacao
 from backend.src.domain.models.tipo_quarto import TipoDeQuarto
 from backend.src.infra.repositories.quarto_repository import QuartoRepository, ConcorrenciaQuartoError
 from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepository
@@ -36,10 +36,10 @@ async def test_atualizar_quarto_incrementa_versao(db_session, tipo_quarto_padrao
     quarto = await repo.salvar(Quarto(numero="202", andar=2, tipo_quarto_id=tipo_quarto_padrao.id))
 
     # Simulando o check-in
-    quarto.atualizarStatus(StatusQuarto.OCUPADO)
+    quarto.atualizarStatusOcupacao(StatusOcupacao.OCUPADO)
     quarto_atualizado = await repo.salvar(quarto)
 
-    assert quarto_atualizado.status == StatusQuarto.OCUPADO
+    assert quarto_atualizado.status_ocupacao == StatusOcupacao.OCUPADO
     assert quarto_atualizado.versao == 2  # O banco subiu para 2 automaticamente!
 
 
@@ -64,11 +64,11 @@ async def test_optimistic_locking_impede_sobrescrita_simultanea(db_session, tipo
             quarto_B = await repo_B.buscar_por_id(quarto_original.id)
 
             # Recepcionista A altera o status e salva (Sucesso! Banco vai para versão 2)
-            quarto_A.atualizarStatus(StatusQuarto.OCUPADO)
+            quarto_A.atualizarStatusOcupacao(StatusOcupacao.OCUPADO)
             await repo_A.salvar(quarto_A)
 
             # Recepcionista B tenta alterar (Ele ainda acha que a versão é 1)
-            quarto_B.atualizarStatus(StatusQuarto.MANUTENCAO)
+            quarto_B.atualizarStatusOcupacao(StatusOcupacao.MANUTENCAO)
 
             # Boom! O SQLAlchemy intercepta a incompatibilidade de versão.
             with pytest.raises(ConcorrenciaQuartoError, match="modificado por outro usuário"):

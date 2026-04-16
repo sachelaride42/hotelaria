@@ -4,8 +4,13 @@ from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepository
 from backend.src.domain.models.tipo_quarto import TipoDeQuarto
 from backend.src.api.schemas.tipo_quarto_schema import TipoQuartoBase, TipoQuartoOutput
+from backend.src.api.dependencies.seguranca import exigir_gerente
 
-router = APIRouter(prefix="/tipos-quarto", tags=["Tipos de Quarto"])
+router = APIRouter(
+    prefix="/tipos-quarto",
+    tags=["Tipos de Quarto"],
+    dependencies=[Depends(exigir_gerente)]
+)
 
 def get_tipo_repo(session: AsyncSession = Depends(get_db_session)):
     return TipoQuartoRepository(session)

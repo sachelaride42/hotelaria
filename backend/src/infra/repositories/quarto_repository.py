@@ -33,7 +33,8 @@ class QuartoRepository:
             quarto_orm = QuartoORM(
                 numero=quarto.numero,
                 andar=quarto.andar,
-                status=quarto.status,
+                status_ocupacao=quarto.status_ocupacao,
+                status_limpeza=quarto.status_limpeza,
                 tipo_quarto_id=quarto.tipo_quarto_id,
                 versao=1
             )
@@ -53,7 +54,8 @@ class QuartoRepository:
                     QuartoORM.versao == quarto.versao  # ← coração do Optimistic Locking
                 )
                 .values(
-                    status=quarto.status,
+                    status_ocupacao=quarto.status_ocupacao,
+                    status_limpeza=quarto.status_limpeza,
                     versao=quarto.versao + 1  # ← incrementa a versão
                 )
             )

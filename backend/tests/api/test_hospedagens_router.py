@@ -2,19 +2,23 @@ import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 from datetime import datetime, timedelta
-from backend.src.domain.models.quarto import StatusQuarto
+from backend.src.domain.models.quarto import StatusOcupacao, StatusLimpeza
 
 
 @pytest_asyncio.fixture
-async def setup_dados_iniciais(client: AsyncClient):
+async def setup_dados_iniciais(client: AsyncClient, token_gerente: str, token_recepcionista: str):
     """Cria Cliente, TipoQuarto e Quarto para podermos testar a hospedagem."""
-    # 1. Cliente
-    cliente_resp = await client.post("/clientes/", json={"nome": "Carlos", "telefone": "123"})
-    # 2. Tipo Quarto (Diária R$ 100)
-    tipo_resp = await client.post("/tipos-quarto/", json={"nome": "Casal", "precoBaseDiaria": 100.00, "capacidade": 2})
-    # 3. Quarto 101 (Versão 1, LIVRE)
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    # 1. Cliente (qualquer usuário logado pode criar)
+    cliente_resp = await client.post("/clientes/", json={"nome": "Carlos", "telefone": "123"}, headers=r_headers)
+    # 2. Tipo Quarto (Diária R$ 100) — exige Gerente
+    tipo_resp = await client.post("/tipos-quarto/", json={"nome": "Casal", "precoBaseDiaria": 100.00, "capacidade": 2}, headers=g_headers)
+    # 3. Quarto 101 (Versão 1, LIVRE) — exige Gerente
     quarto_resp = await client.post("/quartos/",
-                                    json={"numero": "101", "andar": 1, "tipo_quarto_id": tipo_resp.json()["id"]})
+                                    json={"numero": "101", "andar": 1, "tipo_quarto_id": tipo_resp.json()["id"]},
+                                    headers=g_headers)
 
     return {
         "cliente_id": cliente_resp.json()["id"],
@@ -24,8 +28,9 @@ async def setup_dados_iniciais(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_api_fluxo_checkin_e_checkout(client: AsyncClient, setup_dados_iniciais):
+async def test_api_fluxo_checkin_e_checkout(client: AsyncClient, token_recepcionista: str, setup_dados_iniciais):
     dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
     data_saida_prevista = (datetime.now() + timedelta(days=2)).isoformat()
 
     # ==========================================
@@ -38,14 +43,14 @@ async def test_api_fluxo_checkin_e_checkout(client: AsyncClient, setup_dados_ini
         "versao_quarto": dados["quarto_versao"]
     }
 
-    resp_checkin = await client.post("/hospedagens/checkin", json=payload_checkin)
+    resp_checkin = await client.post("/hospedagens/checkin", json=payload_checkin, headers=r_headers)
     assert resp_checkin.status_code == 201
     hospedagem_id = resp_checkin.json()["id"]
 
     # Verifica se o quarto ficou OCUPADO
-    resp_quarto_apos_checkin = await client.get(f"/quartos/{dados['quarto_id']}")
+    resp_quarto_apos_checkin = await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)
     print(resp_quarto_apos_checkin.json())
-    assert resp_quarto_apos_checkin.json()["status"] == StatusQuarto.OCUPADO.value
+    assert resp_quarto_apos_checkin.json()["status_ocupacao"] == StatusOcupacao.OCUPADO.value
     nova_versao_quarto = resp_quarto_apos_checkin.json()["versao"]  # A versão subiu para 2!
 
     # ==========================================
@@ -55,10 +60,11 @@ async def test_api_fluxo_checkin_e_checkout(client: AsyncClient, setup_dados_ini
         "versao_quarto": nova_versao_quarto
     }
 
-    resp_checkout = await client.post(f"/hospedagens/{hospedagem_id}/checkout", json=payload_checkout)
+    resp_checkout = await client.post(f"/hospedagens/{hospedagem_id}/checkout", json=payload_checkout, headers=r_headers)
     assert resp_checkout.status_code == 200
     assert resp_checkout.json()["status"] == "FINALIZADA"
 
-    # Verifica se o quarto ficou SUJO para a equipe de limpeza
-    resp_quarto_apos_checkout = await client.get(f"/quartos/{dados['quarto_id']}")
-    assert resp_quarto_apos_checkout.json()["status"] == StatusQuarto.SUJO.value
+    # Verifica se o quarto ficou LIVRE e SUJO para a equipe de limpeza
+    resp_quarto_apos_checkout = await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)
+    assert resp_quarto_apos_checkout.json()["status_ocupacao"] == StatusOcupacao.LIVRE.value
+    assert resp_quarto_apos_checkout.json()["status_limpeza"] == StatusLimpeza.SUJO.value

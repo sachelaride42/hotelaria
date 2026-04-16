@@ -6,13 +6,19 @@ from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.produto_servico_repository import ProdutoServicoRepository, ProdutoDuplicadoError
 from backend.src.domain.models.produto_servico import ProdutoServico
 from backend.src.api.schemas.produto_servico_schema import ProdutoServicoBase, ProdutoServicoOutput
+from backend.src.api.dependencies.seguranca import get_usuario_logado, exigir_gerente
 
-router = APIRouter(prefix="/catalogo", tags=["Catálogo de Produtos e Serviços"])
+router = APIRouter(
+    prefix="/catalogo",
+    tags=["Catálogo de Produtos e Serviços"],
+    dependencies=[Depends(get_usuario_logado)]
+)
 
 def get_catalogo_repo(session: AsyncSession = Depends(get_db_session)) -> ProdutoServicoRepository:
     return ProdutoServicoRepository(session)
 
-@router.post("/", response_model=ProdutoServicoOutput, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ProdutoServicoOutput, status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(exigir_gerente)])
 async def criar_item_catalogo(
     payload: ProdutoServicoBase,
     repo: ProdutoServicoRepository = Depends(get_catalogo_repo)

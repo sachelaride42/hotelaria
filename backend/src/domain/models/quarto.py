@@ -1,14 +1,17 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
 
-# Definidos os estados possíveis baseados nas regras de negócio e governança
-class StatusQuarto(str, Enum):
+class StatusOcupacao(str, Enum):
     LIVRE = "LIVRE"
     OCUPADO = "OCUPADO"
-    SUJO = "SUJO"
     MANUTENCAO = "MANUTENCAO"
+
+
+class StatusLimpeza(str, Enum):
+    LIMPO = "LIMPO"
+    SUJO = "SUJO"
 
 
 @dataclass
@@ -19,7 +22,8 @@ class Quarto:
     numero: str
     andar: int
     tipo_quarto_id: int
-    status: StatusQuarto = StatusQuarto.LIVRE
+    status_ocupacao: StatusOcupacao = StatusOcupacao.LIVRE
+    status_limpeza: StatusLimpeza = StatusLimpeza.LIMPO
 
     # Controle de concorrência (Optimistic Locking)
     versao: int = 1
@@ -27,10 +31,19 @@ class Quarto:
     # O ID é opcional na criação, pois só é gerado após salvar no banco
     id: Optional[int] = None
 
-    def atualizarStatus(self, novoStatus: StatusQuarto):
-        # Primeira regra: Um quarto sujo não pode ir direto para ocupado
-        if self.status == StatusQuarto.SUJO and novoStatus == StatusQuarto.OCUPADO:
-            raise ValueError("Quarto precisa ser limpo antes de ser ocupado.")
-        elif novoStatus == StatusQuarto.OCUPADO and self.status != StatusQuarto.LIVRE:
-            raise ValueError(f"O quarto {self.numero} não pode ser ocupado pois está {self.status.value}.")
-        self.status = novoStatus
+    def atualizarStatusOcupacao(self, novo: StatusOcupacao):
+        if novo == StatusOcupacao.OCUPADO:
+            if self.status_ocupacao != StatusOcupacao.LIVRE:
+                raise ValueError(f"O quarto {self.numero} não pode ser ocupado pois está {self.status_ocupacao.value}.")
+            if self.status_limpeza == StatusLimpeza.SUJO:
+                raise ValueError("Quarto precisa ser limpo antes de ser ocupado.")
+        elif novo == StatusOcupacao.MANUTENCAO:
+            if self.status_ocupacao == StatusOcupacao.OCUPADO:
+                raise ValueError(f"O quarto {self.numero} está ocupado e não pode entrar em manutenção.")
+        elif novo == StatusOcupacao.LIVRE and self.status_ocupacao == StatusOcupacao.OCUPADO:
+            # Check-out: quarto recém desocupado fica sujo
+            self.status_limpeza = StatusLimpeza.SUJO
+        self.status_ocupacao = novo
+
+    def atualizarStatusLimpeza(self, novo: StatusLimpeza):
+        self.status_limpeza = novo

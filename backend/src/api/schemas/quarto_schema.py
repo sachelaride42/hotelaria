@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from backend.src.domain.models.quarto import StatusQuarto
+from backend.src.domain.models.quarto import StatusOcupacao, StatusLimpeza
 
 
 class QuartoCriarInput(BaseModel):
@@ -9,9 +9,15 @@ class QuartoCriarInput(BaseModel):
     tipo_quarto_id: int = Field(..., gt=0, description="ID do tipo de quarto associado")
 
 
-class QuartoAtualizarStatusInput(BaseModel):
-    #Payload para quando a Governanta ou Recepção alterar o status
-    status: StatusQuarto
+class QuartoAtualizarStatusOcupacaoInput(BaseModel):
+    #Payload para a Recepção ou Manutenção alterar o status de ocupação
+    status_ocupacao: StatusOcupacao
+    versao: int = Field(..., description="Versão atual em posse do frontend (Optimistic Locking)")
+
+
+class QuartoAtualizarStatusLimpezaInput(BaseModel):
+    #Payload para a Governanta alterar o status de limpeza
+    status_limpeza: StatusLimpeza
     versao: int = Field(..., description="Versão atual em posse do frontend (Optimistic Locking)")
 
 
@@ -21,7 +27,8 @@ class QuartoOutput(BaseModel):
     numero: str
     andar: int
     tipo_quarto_id: int
-    status: StatusQuarto
+    status_ocupacao: StatusOcupacao
+    status_limpeza: StatusLimpeza
     versao: int
 
     model_config = ConfigDict(from_attributes=True)

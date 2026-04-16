@@ -8,13 +8,18 @@ from backend.src.infra.repositories.hospedagem_repository import HospedagemRepos
 from backend.src.infra.repositories.item_consumo_repository import ItemConsumoRepository
 from backend.src.infra.repositories.quarto_repository import QuartoRepository, ConcorrenciaQuartoError
 from backend.src.domain.models.hospedagem import Hospedagem
-from backend.src.domain.models.quarto import StatusQuarto
+from backend.src.domain.models.quarto import StatusOcupacao
 from backend.src.api.schemas.hospedagem_schema import HospedagemCheckinInput, HospedagemOutput, HospedagemCheckoutInput
 from backend.src.infra.repositories.reserva_repository import ReservaRepository
 from backend.src.domain.models.reserva import StatusReserva
 from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepository
+from backend.src.api.dependencies.seguranca import get_usuario_logado
 
-router = APIRouter(prefix="/hospedagens", tags=["Hospedagens e Check-in"])
+router = APIRouter(
+    prefix="/hospedagens",
+    tags=["Hospedagens e Check-in"],
+    dependencies=[Depends(get_usuario_logado)]
+)
 
 
 def get_hospedagem_repo(session: AsyncSession = Depends(get_db_session)) -> HospedagemRepository:
@@ -42,10 +47,10 @@ async def realizar_checkin(
     if not quarto:
         raise HTTPException(status_code=404, detail="Quarto não encontrado.")
 
-    if quarto.status != StatusQuarto.LIVRE:
+    if quarto.status_ocupacao != StatusOcupacao.LIVRE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"O quarto {quarto.numero} não está livre. Estado atual: {quarto.status.value}."
+            detail=f"O quarto {quarto.numero} não está livre. Estado de ocupação: {quarto.status_ocupacao.value}."
         )
 
     # 2. Verifica a versão para o Optimistic Locking
@@ -80,7 +85,7 @@ async def realizar_checkin(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(erro_dominio))
 
     # 4. Atualiza o estado do Quarto
-    quarto.atualizarStatus(StatusQuarto.OCUPADO)
+    quarto.atualizarStatusOcupacao(StatusOcupacao.OCUPADO)
 
     # 5. Persiste tudo na base de dados
     try:
@@ -146,7 +151,7 @@ async def realizar_checkout(
     # 5. Executa as Regras de Negócio nas Entidades (Domínio)
     try:
         hospedagem.realizar_checkout(data_saida=data_saida_real, valor_calculado=valor_final)
-        quarto.atualizarStatus(StatusQuarto.SUJO)
+        quarto.atualizarStatusOcupacao(StatusOcupacao.LIVRE)
     except ValueError as erro_dominio:
         raise HTTPException(status_code=400, detail=str(erro_dominio))
 

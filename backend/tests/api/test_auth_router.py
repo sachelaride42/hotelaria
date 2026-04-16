@@ -2,8 +2,11 @@ import pytest
 from httpx import AsyncClient
 from fastapi import APIRouter, Depends
 import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession
 from backend.src.api.dependencies.seguranca import exigir_gerente
 from backend.src.main import app # Importa a app principal do FastAPI
+from backend.src.domain.models.usuario import Gerente, Recepcionista, Usuario
+from backend.src.infra.repositories.usuario_repository import UsuarioRepository
 
 # É injetada uma rota temporária na app apenas para testar a tranca do Gerente
 rota_teste = APIRouter()
@@ -14,10 +17,19 @@ app.include_router(rota_teste)
 
 
 @pytest_asyncio.fixture
-async def setup_usuarios_teste(client: AsyncClient):
-    """Cria dois utilizadores para usarmos nos testes de login."""
-    await client.post("/usuarios/", json={"nome": "Chefe", "email": "chefe@hotel.com", "senha": "123456", "tipo": "GERENTE"})
-    await client.post("/usuarios/", json={"nome": "Atendente", "email": "atendimento@hotel.com", "senha": "abcdef", "tipo": "RECEPCIONISTA"})
+async def setup_usuarios_teste(client: AsyncClient, db_session: AsyncSession):
+    """Cria dois utilizadores diretamente no banco para os testes de login."""
+    repo = UsuarioRepository(db_session)
+    await repo.salvar(Gerente(
+        nome="Chefe",
+        email="chefe@hotel.com",
+        senha_hash=Usuario.gerar_hash("123456")
+    ))
+    await repo.salvar(Recepcionista(
+        nome="Atendente",
+        email="atendimento@hotel.com",
+        senha_hash=Usuario.gerar_hash("abcdef")
+    ))
 
 
 @pytest.mark.asyncio

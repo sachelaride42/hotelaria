@@ -1,6 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import String, Enum as SQLEnum, ForeignKey
-from backend.src.domain.models.quarto import StatusQuarto, Quarto
+from backend.src.domain.models.quarto import StatusOcupacao, StatusLimpeza, Quarto
 from backend.src.infra.database import Base
 
 # Base declarativa padrão do SQLAlchemy
@@ -18,7 +18,16 @@ class QuartoORM(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     numero: Mapped[str] = mapped_column(String(10), nullable=False, unique=True)
     andar: Mapped[int] = mapped_column(nullable=False)
-    status: Mapped[StatusQuarto] = mapped_column(SQLEnum(StatusQuarto), default=StatusQuarto.LIVRE, nullable=False)
+    status_ocupacao: Mapped[StatusOcupacao] = mapped_column(
+        SQLEnum(StatusOcupacao, name="statusocupacao"),
+        default=StatusOcupacao.LIVRE,
+        nullable=False
+    )
+    status_limpeza: Mapped[StatusLimpeza] = mapped_column(
+        SQLEnum(StatusLimpeza, name="statuslimpeza"),
+        default=StatusLimpeza.LIMPO,
+        nullable=False
+    )
 
     tipo_quarto_id: Mapped[int] = mapped_column(ForeignKey("tipos_quarto.id"), nullable=False)
     # Optimistic Locking
@@ -35,7 +44,8 @@ class QuartoORM(Base):
             id=self.id,
             numero=self.numero,
             andar=self.andar,
-            status=self.status,
+            status_ocupacao=self.status_ocupacao,
+            status_limpeza=self.status_limpeza,
             tipo_quarto_id=self.tipo_quarto_id,
             versao=self.versao
         )

@@ -7,8 +7,13 @@ from backend.src.infra.repositories.item_consumo_repository import ItemConsumoRe
 from backend.src.infra.repositories.hospedagem_repository import HospedagemRepository
 from backend.src.domain.models.item_consumo import ItemConsumo
 from backend.src.api.schemas.item_consumo_schema import ItemConsumoCriarInput, ItemConsumoOutput
+from backend.src.api.dependencies.seguranca import get_usuario_logado
 
-router = APIRouter(prefix="/itens-consumo", tags=["Lançamentos de Consumo"])
+router = APIRouter(
+    prefix="/itens-consumo",
+    tags=["Lançamentos de Consumo"],
+    dependencies=[Depends(get_usuario_logado)]
+)
 
 
 def get_consumo_repo(session: AsyncSession = Depends(get_db_session)) -> ItemConsumoRepository:

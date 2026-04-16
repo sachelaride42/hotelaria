@@ -6,6 +6,8 @@ from backend.src.infra.database import Base
 from httpx import AsyncClient, ASGITransport
 from backend.src.main import app  # Importa a aplicação FastAPI
 from backend.src.infra.database import get_db_session
+from backend.src.domain.models.usuario import Gerente, Recepcionista, Usuario
+from backend.src.infra.repositories.usuario_repository import UsuarioRepository
 
 # Usamos SQLite em memória para os testes rodarem de forma ultra-rápida e isolada
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./backend/tests/test.db"
@@ -54,3 +56,31 @@ async def client(db_session):
 
     # Limpa o override após o teste
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def token_gerente(client: AsyncClient, db_session: AsyncSession) -> str:
+    """Cria um Gerente diretamente no banco (bypassando a API) e retorna o JWT de acesso."""
+    repo = UsuarioRepository(db_session)
+    gerente = Gerente(
+        nome="Gerente Teste",
+        email="gerente@teste.com",
+        senha_hash=Usuario.gerar_hash("gerente123")
+    )
+    await repo.salvar(gerente)
+    resp = await client.post("/auth/login", data={"username": "gerente@teste.com", "password": "gerente123"})
+    return resp.json()["access_token"]
+
+
+@pytest_asyncio.fixture
+async def token_recepcionista(client: AsyncClient, db_session: AsyncSession) -> str:
+    """Cria um Recepcionista diretamente no banco (bypassando a API) e retorna o JWT de acesso."""
+    repo = UsuarioRepository(db_session)
+    recep = Recepcionista(
+        nome="Recep Teste",
+        email="recep@teste.com",
+        senha_hash=Usuario.gerar_hash("recep123")
+    )
+    await repo.salvar(recep)
+    resp = await client.post("/auth/login", data={"username": "recep@teste.com", "password": "recep123"})
+    return resp.json()["access_token"]
