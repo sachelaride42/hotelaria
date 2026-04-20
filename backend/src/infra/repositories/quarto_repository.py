@@ -77,3 +77,10 @@ class QuartoRepository:
         resultado = await self.session.execute(stmt)
         return resultado.scalar_one()
 
+    async def listar_todos(self) -> list[Quarto]:
+        """Lista todos os quartos cadastrados."""
+        stmt = select(QuartoORM)
+        resultado = await self.session.execute(stmt)
+        quartos_orm = resultado.scalars().all()
+        return [q.to_domain() for q in quartos_orm]
+
