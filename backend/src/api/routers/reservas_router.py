@@ -11,10 +11,10 @@ from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.quarto_repository import QuartoRepository
 from backend.src.infra.repositories.reserva_repository import ReservaRepository
 from backend.src.domain.models.reserva import Reserva
-from backend.src.api.schemas.reserva_schema import ReservaCriarInput, ReservaOutput
+from backend.src.api.schemas.reserva_schema import ReservaCriarInput, ReservaAtualizarInput, ReservaOutput
 from backend.src.domain.services.calculadora_diarias import CalculadoraDeDiarias
 from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepository
-from backend.src.api.dependencies.seguranca import get_usuario_logado
+from backend.src.api.dependencies.seguranca import get_usuario_logado, exigir_gerente
 
 router = APIRouter(
     prefix="/reservas",
@@ -106,3 +106,64 @@ async def cancelar_reserva(
         return reserva_salva
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/{reserva_id}", response_model=ReservaOutput)
+async def atualizar_reserva(
+        reserva_id: int,
+        payload: ReservaAtualizarInput,
+        session: AsyncSession = Depends(get_db_session),
+):
+    """Atualiza as datas de uma reserva e recalcula o valor previsto. Não permitido para reservas UTILIZADAS ou CANCELADAS."""
+    from backend.src.domain.models.reserva import StatusReserva
+    repo = ReservaRepository(session)
+    tipo_quarto_repo = TipoQuartoRepository(session)
+
+    reserva = await repo.buscar_por_id(reserva_id)
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva não encontrada.")
+
+    if reserva.status in (StatusReserva.UTILIZADA, StatusReserva.CANCELADA):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Não é possível alterar uma reserva com status {reserva.status.value}."
+        )
+
+    tipo_quarto = await tipo_quarto_repo.buscar_por_id(reserva.tipo_quarto_id)
+    if not tipo_quarto:
+        raise HTTPException(status_code=404, detail="Tipo de quarto não encontrado.")
+
+    try:
+        dt_entrada = datetime.combine(payload.data_entrada, PoliticasHotel.HORARIO_PADRAO_CHECKIN)
+        dt_saida = datetime.combine(payload.data_saida, PoliticasHotel.HORARIO_PADRAO_CHECKOUT)
+        novo_valor = CalculadoraDeDiarias.calcular_total(
+            data_checkin=dt_entrada,
+            data_checkout=dt_saida,
+            valor_diaria=tipo_quarto.precoBaseDiaria
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    reserva.data_entrada = payload.data_entrada
+    reserva.data_saida = payload.data_saida
+    reserva.valor_total_previsto = novo_valor
+    return await repo.salvar(reserva)
+
+
+@router.delete("/{reserva_id}", status_code=status.HTTP_204_NO_CONTENT,
+               dependencies=[Depends(exigir_gerente)])
+async def deletar_reserva(
+        reserva_id: int,
+        repo: ReservaRepository = Depends(get_reserva_repo)
+):
+    """Remove uma reserva. Não permitido para reservas UTILIZADAS (vinculadas a uma hospedagem)."""
+    from backend.src.domain.models.reserva import StatusReserva
+    reserva = await repo.buscar_por_id(reserva_id)
+    if not reserva:
+        raise HTTPException(status_code=404, detail="Reserva não encontrada.")
+    if reserva.status == StatusReserva.UTILIZADA:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é possível remover uma reserva que já foi utilizada numa hospedagem."
+        )
+    await repo.deletar(reserva_id)

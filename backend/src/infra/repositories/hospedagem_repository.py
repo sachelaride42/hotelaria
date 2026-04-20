@@ -42,6 +42,13 @@ class HospedagemRepository:
         orm = resultado.scalar_one_or_none()
         return orm.to_domain() if orm else None
 
+    async def deletar(self, hospedagem_id: int) -> None:
+        stmt = select(HospedagemORM).where(HospedagemORM.id == hospedagem_id)
+        orm_obj = (await self.session.execute(stmt)).scalar_one_or_none()
+        if orm_obj:
+            await self.session.delete(orm_obj)
+            await self.session.commit()
+
     async def buscar_ativa_por_quarto(self, quarto_id: int) -> Optional[Hospedagem]:
         """Útil para encontrar quem está no quarto no momento do Check-out."""
         stmt = select(HospedagemORM).where(

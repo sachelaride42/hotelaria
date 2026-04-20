@@ -70,6 +70,25 @@ class QuartoRepository:
 
             return quarto
 
+    async def atualizar_dados_basicos(self, quarto_id: int, numero: str, andar: int, tipo_quarto_id: int) -> Quarto | None:
+        stmt = select(QuartoORM).where(QuartoORM.id == quarto_id)
+        quarto_orm = (await self.session.execute(stmt)).scalar_one_or_none()
+        if not quarto_orm:
+            return None
+        quarto_orm.numero = numero
+        quarto_orm.andar = andar
+        quarto_orm.tipo_quarto_id = tipo_quarto_id
+        await self.session.commit()
+        await self.session.refresh(quarto_orm)
+        return quarto_orm.to_domain()
+
+    async def deletar(self, quarto_id: int) -> None:
+        stmt = select(QuartoORM).where(QuartoORM.id == quarto_id)
+        quarto_orm = (await self.session.execute(stmt)).scalar_one_or_none()
+        if quarto_orm:
+            await self.session.delete(quarto_orm)
+            await self.session.commit()
+
     async def contar_por_tipo(self, tipo_quarto_id: int) -> int:
         """Conta quantos quartos físicos existem de um determinado tipo."""
         # O teste desse metodo esta feito em test_tipo_quarto_repository.py

@@ -31,6 +31,13 @@ class TipoQuartoRepository:
             tipo.id = tipo_orm.id
         return tipo
 
+    async def deletar(self, tipo_id: int) -> None:
+        stmt = select(TipoDeQuartoORM).where(TipoDeQuartoORM.id == tipo_id)
+        orm_obj = (await self.session.execute(stmt)).scalar_one_or_none()
+        if orm_obj:
+            await self.session.delete(orm_obj)
+            await self.session.commit()
+
     async def buscar_por_id(self, tipo_id: int) -> Optional[TipoDeQuarto]:
         stmt = select(TipoDeQuartoORM).where(TipoDeQuartoORM.id == tipo_id)
         resultado = await self.session.execute(stmt)

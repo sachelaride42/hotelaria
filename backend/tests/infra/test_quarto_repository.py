@@ -95,3 +95,48 @@ async def test_listar_todos_retorna_lista_vazia_sem_quartos(db_session):
     todos = await repo.listar_todos()
 
     assert todos == []
+
+
+@pytest.mark.asyncio
+async def test_atualizar_dados_basicos_quarto(db_session, tipo_quarto_padrao):
+    """atualizar_dados_basicos deve alterar numero, andar e tipo sem incrementar versão."""
+    repo = QuartoRepository(db_session)
+    tipo_repo = TipoQuartoRepository(db_session)
+
+    quarto = await repo.salvar(Quarto(numero="501", andar=5, tipo_quarto_id=tipo_quarto_padrao.id))
+    versao_original = quarto.versao
+
+    # Cria um segundo tipo para testar troca
+    tipo2 = await tipo_repo.salvar(TipoDeQuarto(nome="Luxo", precoBaseDiaria=Decimal("300.00"), capacidade=3))
+
+    atualizado = await repo.atualizar_dados_basicos(quarto.id, "502", 6, tipo2.id)
+
+    assert atualizado.numero == "502"
+    assert atualizado.andar == 6
+    assert atualizado.tipo_quarto_id == tipo2.id
+    # O version_id_col do SQLAlchemy incrementa versao em qualquer UPDATE
+    assert atualizado.versao == versao_original + 1
+
+
+@pytest.mark.asyncio
+async def test_atualizar_dados_basicos_quarto_inexistente_retorna_none(db_session, tipo_quarto_padrao):
+    repo = QuartoRepository(db_session)
+    resultado = await repo.atualizar_dados_basicos(9999, "000", 1, tipo_quarto_padrao.id)
+    assert resultado is None
+
+
+@pytest.mark.asyncio
+async def test_deletar_quarto(db_session, tipo_quarto_padrao):
+    """deletar deve remover o quarto; buscar_por_id retorna None depois."""
+    repo = QuartoRepository(db_session)
+    quarto = await repo.salvar(Quarto(numero="601", andar=6, tipo_quarto_id=tipo_quarto_padrao.id))
+
+    await repo.deletar(quarto.id)
+
+    assert await repo.buscar_por_id(quarto.id) is None
+
+
+@pytest.mark.asyncio
+async def test_deletar_quarto_inexistente_nao_lanca_erro(db_session):
+    repo = QuartoRepository(db_session)
+    await repo.deletar(9999)

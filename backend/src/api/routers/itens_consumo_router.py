@@ -6,8 +6,8 @@ from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.item_consumo_repository import ItemConsumoRepository
 from backend.src.infra.repositories.hospedagem_repository import HospedagemRepository
 from backend.src.domain.models.item_consumo import ItemConsumo
-from backend.src.api.schemas.item_consumo_schema import ItemConsumoCriarInput, ItemConsumoOutput
-from backend.src.api.dependencies.seguranca import get_usuario_logado
+from backend.src.api.schemas.item_consumo_schema import ItemConsumoCriarInput, ItemConsumoAtualizarInput, ItemConsumoOutput
+from backend.src.api.dependencies.seguranca import get_usuario_logado, exigir_gerente
 
 router = APIRouter(
     prefix="/itens-consumo",
@@ -62,3 +62,57 @@ async def listar_extrato_consumo(
 ):
     """Devolve todos os itens consumidos (o Extrato da Conta)."""
     return await repo.buscar_por_hospedagem(hospedagem_id)
+
+
+@router.put("/{item_id}", response_model=ItemConsumoOutput)
+async def atualizar_consumo(
+        item_id: int,
+        payload: ItemConsumoAtualizarInput,
+        session: AsyncSession = Depends(get_db_session),
+):
+    """Atualiza descrição, quantidade e valor de um item de consumo. A hospedagem deve estar ativa."""
+    repo = ItemConsumoRepository(session)
+    hosp_repo = HospedagemRepository(session)
+
+    item = await repo.buscar_por_id(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item de consumo não encontrado.")
+
+    hospedagem = await hosp_repo.buscar_por_id(item.hospedagem_id)
+    if hospedagem.status != "ATIVA":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é possível alterar consumo de uma conta já encerrada."
+        )
+
+    try:
+        item.descricao = payload.descricao
+        item.quantidade = payload.quantidade
+        item.valor_unitario = payload.valor_unitario
+        return await repo.salvar(item)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT,
+               dependencies=[Depends(exigir_gerente)])
+async def deletar_consumo(
+        item_id: int,
+        session: AsyncSession = Depends(get_db_session),
+):
+    """Remove um item de consumo. A hospedagem deve estar ativa. Exige permissão de Gerente."""
+    repo = ItemConsumoRepository(session)
+    hosp_repo = HospedagemRepository(session)
+
+    item = await repo.buscar_por_id(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item de consumo não encontrado.")
+
+    hospedagem = await hosp_repo.buscar_por_id(item.hospedagem_id)
+    if hospedagem.status != "ATIVA":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é possível remover consumo de uma conta já encerrada."
+        )
+
+    await repo.deletar(item_id)

@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 
 from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.cliente_repository import ClienteRepository, CPFDuplicadoError
 from backend.src.domain.models.cliente import Cliente
 from backend.src.api.schemas.cliente_schema import ClienteCriarInput, ClienteAtualizarInput, ClienteOutput
-from backend.src.api.dependencies.seguranca import get_usuario_logado
+from backend.src.api.dependencies.seguranca import get_usuario_logado, exigir_gerente
 
 router = APIRouter(
     prefix="/clientes",
@@ -88,3 +89,22 @@ async def atualizar_cliente(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(erro_dominio))
     except CPFDuplicadoError as erro_banco:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(erro_banco))
+
+
+@router.delete("/{cliente_id}", status_code=status.HTTP_204_NO_CONTENT,
+               dependencies=[Depends(exigir_gerente)])
+async def deletar_cliente(
+        cliente_id: int,
+        repo: ClienteRepository = Depends(get_cliente_repo)
+):
+    """Remove um cliente do sistema. Exige permissão de Gerente."""
+    cliente = await repo.buscar_por_id(cliente_id)
+    if not cliente:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente não encontrado.")
+    try:
+        await repo.deletar(cliente_id)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Não é possível remover o cliente pois ele possui reservas ou hospedagens vinculadas."
+        )

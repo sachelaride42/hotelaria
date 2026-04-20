@@ -99,3 +99,77 @@ async def test_api_obter_extrato_de_consumos(client: AsyncClient, token_recepcio
     assert len(extrato) == 2
     assert extrato[0]["descricao"] == "Água"
     assert extrato[1]["descricao"] == "Vinho"
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_consumo_sucesso(client: AsyncClient, token_recepcionista: str, hospedagem_ativa_id):
+    """Recepcionista atualiza um item de consumo com sucesso."""
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    resp_criar = await client.post("/itens-consumo/", json={
+        "hospedagem_id": hospedagem_ativa_id, "descricao": "Suco", "quantidade": 1, "valor_unitario": 10.00
+    }, headers=r_headers)
+    item_id = resp_criar.json()["id"]
+
+    payload_update = {"descricao": "Suco de Laranja", "quantidade": 3, "valor_unitario": 12.00}
+    response = await client.put(f"/itens-consumo/{item_id}", json=payload_update, headers=r_headers)
+
+    assert response.status_code == 200
+    assert response.json()["descricao"] == "Suco de Laranja"
+    assert response.json()["quantidade"] == 3
+    assert float(response.json()["subtotal"]) == 36.00
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_consumo_nao_encontrado_retorna_404(client: AsyncClient, token_recepcionista: str):
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    payload_update = {"descricao": "Qualquer", "quantidade": 1, "valor_unitario": 5.00}
+    response = await client.put("/itens-consumo/9999", json=payload_update, headers=r_headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_consumo_sem_token_retorna_401(client: AsyncClient):
+    payload_update = {"descricao": "X", "quantidade": 1, "valor_unitario": 5.00}
+    response = await client.put("/itens-consumo/1", json=payload_update)
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_consumo_sucesso(client: AsyncClient, token_gerente: str, token_recepcionista: str, hospedagem_ativa_id):
+    """Gerente remove um item de consumo de uma hospedagem ativa."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    resp_criar = await client.post("/itens-consumo/", json={
+        "hospedagem_id": hospedagem_ativa_id, "descricao": "Cerveja", "quantidade": 2, "valor_unitario": 8.00
+    }, headers=r_headers)
+    item_id = resp_criar.json()["id"]
+
+    response = await client.delete(f"/itens-consumo/{item_id}", headers=g_headers)
+    assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_consumo_nao_encontrado_retorna_404(client: AsyncClient, token_gerente: str):
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.delete("/itens-consumo/9999", headers=g_headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_consumo_sem_token_retorna_401(client: AsyncClient):
+    response = await client.delete("/itens-consumo/1")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_consumo_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str, hospedagem_ativa_id):
+    """Recepcionista não pode deletar itens de consumo — exige Gerente."""
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    resp_criar = await client.post("/itens-consumo/", json={
+        "hospedagem_id": hospedagem_ativa_id, "descricao": "Amendoim", "quantidade": 1, "valor_unitario": 5.00
+    }, headers=r_headers)
+    item_id = resp_criar.json()["id"]
+
+    response = await client.delete(f"/itens-consumo/{item_id}", headers=r_headers)
+    assert response.status_code == 403

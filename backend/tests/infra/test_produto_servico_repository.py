@@ -36,6 +36,40 @@ async def test_listar_todos_ordenados_por_descricao(db_session):
 
 
 @pytest.mark.asyncio
+async def test_atualizar_produto_servico(db_session):
+    """salvar com id preenchido deve atualizar descricao, preco e categoria."""
+    repo = ProdutoServicoRepository(db_session)
+    item = await repo.salvar(ProdutoServico(descricao="Massagem Relaxante", preco_padrao=Decimal("100.00"), categoria=CategoriaItem.SERVICO))
+
+    item.descricao = "Massagem Terapêutica"
+    item.preco_padrao = Decimal("130.00")
+    atualizado = await repo.salvar(item)
+
+    assert atualizado.descricao == "Massagem Terapêutica"
+    assert atualizado.preco_padrao == Decimal("130.00")
+
+    buscado = await repo.buscar_por_id(item.id)
+    assert buscado.descricao == "Massagem Terapêutica"
+
+
+@pytest.mark.asyncio
+async def test_deletar_produto_servico(db_session):
+    """deletar deve remover o item; buscar_por_id retorna None depois."""
+    repo = ProdutoServicoRepository(db_session)
+    item = await repo.salvar(ProdutoServico(descricao="Vitamina C", preco_padrao=Decimal("15.00"), categoria=CategoriaItem.PRODUTO))
+
+    await repo.deletar(item.id)
+
+    assert await repo.buscar_por_id(item.id) is None
+
+
+@pytest.mark.asyncio
+async def test_deletar_produto_inexistente_nao_lanca_erro(db_session):
+    repo = ProdutoServicoRepository(db_session)
+    await repo.deletar(9999)
+
+
+@pytest.mark.asyncio
 async def test_impedir_descricao_duplicada(db_session):
     repo = ProdutoServicoRepository(db_session)
 

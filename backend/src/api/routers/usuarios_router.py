@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.usuario_repository import UsuarioRepository, EmailDuplicadoError
 from backend.src.domain.models.usuario import Usuario, Gerente, Recepcionista, TipoUsuario
-from backend.src.api.schemas.usuario_schema import UsuarioCriarInput, UsuarioOutput
+from backend.src.api.schemas.usuario_schema import UsuarioCriarInput, UsuarioAtualizarInput, UsuarioOutput
 from backend.src.api.dependencies.seguranca import exigir_gerente
 
 router = APIRouter(
@@ -39,3 +39,39 @@ async def criar_usuario(
         return await repo.salvar(novo_usuario)
     except EmailDuplicadoError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+
+
+@router.put("/{usuario_id}", response_model=UsuarioOutput)
+async def atualizar_usuario(
+    usuario_id: int,
+    payload: UsuarioAtualizarInput,
+    repo: UsuarioRepository = Depends(get_usuario_repo)
+):
+    """Atualiza dados de um usuário existente. Se a senha for omitida, mantém a atual."""
+    usuario_existente = await repo.buscar_por_id(usuario_id)
+    if not usuario_existente:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
+
+    senha_hash = Usuario.gerar_hash(payload.senha) if payload.senha else usuario_existente.senha_hash
+
+    if payload.tipo == TipoUsuario.GERENTE:
+        usuario_atualizado = Gerente(id=usuario_existente.id, nome=payload.nome, email=payload.email, senha_hash=senha_hash)
+    else:
+        usuario_atualizado = Recepcionista(id=usuario_existente.id, nome=payload.nome, email=payload.email, senha_hash=senha_hash)
+
+    try:
+        return await repo.salvar(usuario_atualizado)
+    except EmailDuplicadoError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+
+
+@router.delete("/{usuario_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deletar_usuario(
+    usuario_id: int,
+    repo: UsuarioRepository = Depends(get_usuario_repo)
+):
+    """Remove um usuário do sistema."""
+    usuario = await repo.buscar_por_id(usuario_id)
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
+    await repo.deletar(usuario_id)

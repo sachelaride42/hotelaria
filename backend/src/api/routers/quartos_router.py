@@ -7,6 +7,7 @@ from backend.src.infra.repositories.quarto_repository import QuartoRepository, C
 from backend.src.domain.models.quarto import Quarto
 from backend.src.api.schemas.quarto_schema import (
     QuartoCriarInput,
+    QuartoAtualizarDadosInput,
     QuartoAtualizarStatusOcupacaoInput,
     QuartoAtualizarStatusLimpezaInput,
     QuartoOutput,
@@ -104,3 +105,39 @@ async def buscar_quarto(
     if not quarto:
         raise HTTPException(status_code=404, detail="Quarto não encontrado.")
     return quarto
+
+
+@router.put("/{quarto_id}", response_model=QuartoOutput,
+            dependencies=[Depends(exigir_gerente)])
+async def atualizar_dados_quarto(
+        quarto_id: int,
+        payload: QuartoAtualizarDadosInput,
+        repo: QuartoRepository = Depends(get_quarto_repo)
+):
+    """Atualiza número, andar e tipo de um quarto. Não afeta status nem versão."""
+    quarto = await repo.buscar_por_id(quarto_id)
+    if not quarto:
+        raise HTTPException(status_code=404, detail="Quarto não encontrado.")
+    quarto_atualizado = await repo.atualizar_dados_basicos(
+        quarto_id, payload.numero, payload.andar, payload.tipo_quarto_id
+    )
+    return quarto_atualizado
+
+
+@router.delete("/{quarto_id}", status_code=status.HTTP_204_NO_CONTENT,
+               dependencies=[Depends(exigir_gerente)])
+async def deletar_quarto(
+        quarto_id: int,
+        repo: QuartoRepository = Depends(get_quarto_repo)
+):
+    """Remove um quarto do sistema. Não é permitido deletar quartos ocupados."""
+    from backend.src.domain.models.quarto import StatusOcupacao
+    quarto = await repo.buscar_por_id(quarto_id)
+    if not quarto:
+        raise HTTPException(status_code=404, detail="Quarto não encontrado.")
+    if quarto.status_ocupacao == StatusOcupacao.OCUPADO:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é possível remover um quarto que está ocupado."
+        )
+    await repo.deletar(quarto_id)

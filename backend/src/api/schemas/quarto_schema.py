@@ -9,6 +9,12 @@ class QuartoCriarInput(BaseModel):
     tipo_quarto_id: int = Field(..., gt=0, description="ID do tipo de quarto associado")
 
 
+class QuartoAtualizarDadosInput(BaseModel):
+    numero: str = Field(..., min_length=1, max_length=10, description="Número identificador, ex: 101A")
+    andar: int = Field(..., gt=0, description="Andar do quarto")
+    tipo_quarto_id: int = Field(..., gt=0, description="ID do tipo de quarto associado")
+
+
 class QuartoAtualizarStatusOcupacaoInput(BaseModel):
     #Payload para a Recepção ou Manutenção alterar o status de ocupação
     status_ocupacao: StatusOcupacao

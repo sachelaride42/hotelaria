@@ -50,6 +50,13 @@ class ProdutoServicoRepository:
         orm = resultado.scalar_one_or_none()
         return orm.to_domain() if orm else None
 
+    async def deletar(self, item_id: int) -> None:
+        stmt = select(ProdutoServicoORM).where(ProdutoServicoORM.id == item_id)
+        orm_obj = (await self.session.execute(stmt)).scalar_one_or_none()
+        if orm_obj:
+            await self.session.delete(orm_obj)
+            await self.session.commit()
+
     async def listar_todos(self) -> List[ProdutoServico]:
         stmt = select(ProdutoServicoORM)
         resultado = await self.session.execute(stmt)

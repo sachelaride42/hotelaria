@@ -32,6 +32,8 @@ class ReservaRepository:
 
             reserva_orm.status = reserva.status
             reserva_orm.valor_total_previsto = reserva.valor_total_previsto
+            reserva_orm.data_entrada = reserva.data_entrada
+            reserva_orm.data_saida = reserva.data_saida
 
         await self.session.commit()
         if reserva.id is None:
@@ -44,6 +46,13 @@ class ReservaRepository:
         reserva_orm = resultado.scalar_one_or_none()
         return reserva_orm.to_domain() if reserva_orm else None
 
+
+    async def deletar(self, reserva_id: int) -> None:
+        stmt = select(ReservaORM).where(ReservaORM.id == reserva_id)
+        orm_obj = (await self.session.execute(stmt)).scalar_one_or_none()
+        if orm_obj:
+            await self.session.delete(orm_obj)
+            await self.session.commit()
 
     async def contar_reservas_conflitantes(self, tipo_quarto_id: int, entrada: date, saida: date) -> int:
         """Busca no banco quantas reservas já existem nesse período para esse tipo de quarto."""

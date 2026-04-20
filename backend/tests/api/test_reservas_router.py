@@ -55,3 +55,81 @@ async def test_api_criar_reserva_e_disponibilidade2(client: AsyncClient, token_g
     resp1 = await client.post("/reservas/", json=payload_reserva, headers=r_headers)
     print(resp1.json())
     assert resp1.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_reserva_sucesso(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Qualquer usuário logado pode atualizar as datas de uma reserva CONFIRMADA."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/clientes/", json={"nome": "Ana", "telefone": "123"}, headers=r_headers)
+    await client.post("/tipos-quarto/", json={"nome": "Simples", "precoBaseDiaria": 100, "capacidade": 1}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "100", "andar": 1, "tipo_quarto_id": 1}, headers=g_headers)
+
+    payload_reserva = {"cliente_id": 1, "tipo_quarto_id": 1,
+                       "data_entrada": str(date(2027, 6, 1)), "data_saida": str(date(2027, 6, 5))}
+    resp = await client.post("/reservas/", json=payload_reserva, headers=r_headers)
+    reserva_id = resp.json()["id"]
+
+    payload_update = {"data_entrada": str(date(2027, 7, 1)), "data_saida": str(date(2027, 7, 10))}
+    response = await client.put(f"/reservas/{reserva_id}", json=payload_update, headers=r_headers)
+
+    assert response.status_code == 200
+    assert response.json()["data_entrada"] == str(date(2027, 7, 1))
+    assert response.json()["data_saida"] == str(date(2027, 7, 10))
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_reserva_nao_encontrada_retorna_404(client: AsyncClient, token_recepcionista: str):
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    payload_update = {"data_entrada": str(date(2027, 7, 1)), "data_saida": str(date(2027, 7, 10))}
+    response = await client.put("/reservas/9999", json=payload_update, headers=r_headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_reserva_sem_token_retorna_401(client: AsyncClient):
+    payload_update = {"data_entrada": str(date(2027, 7, 1)), "data_saida": str(date(2027, 7, 10))}
+    response = await client.put("/reservas/1", json=payload_update)
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_reserva_sucesso(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Gerente deleta uma reserva CONFIRMADA com sucesso."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/clientes/", json={"nome": "Bob", "telefone": "456"}, headers=r_headers)
+    await client.post("/tipos-quarto/", json={"nome": "Duplo", "precoBaseDiaria": 150, "capacidade": 2}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "200", "andar": 2, "tipo_quarto_id": 1}, headers=g_headers)
+
+    payload_reserva = {"cliente_id": 1, "tipo_quarto_id": 1,
+                       "data_entrada": str(date(2027, 8, 1)), "data_saida": str(date(2027, 8, 5))}
+    resp = await client.post("/reservas/", json=payload_reserva, headers=r_headers)
+    reserva_id = resp.json()["id"]
+
+    response = await client.delete(f"/reservas/{reserva_id}", headers=g_headers)
+    assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_reserva_nao_encontrada_retorna_404(client: AsyncClient, token_gerente: str):
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.delete("/reservas/9999", headers=g_headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_reserva_sem_token_retorna_401(client: AsyncClient):
+    response = await client.delete("/reservas/1")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_reserva_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str):
+    """Recepcionista não pode deletar reservas — exige Gerente."""
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.delete("/reservas/1", headers=r_headers)
+    assert response.status_code == 403

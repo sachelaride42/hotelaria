@@ -11,6 +11,12 @@ class ItemConsumoCriarInput(BaseModel):
     quantidade: int = Field(..., gt=0)
     valor_unitario: ValorMonetario
 
+class ItemConsumoAtualizarInput(BaseModel):
+    descricao: str = Field(..., min_length=2, description="Ex: Coca-Cola Lata")
+    quantidade: int = Field(..., gt=0)
+    valor_unitario: ValorMonetario
+
+
 class ItemConsumoOutput(BaseModel):
     id: int
     hospedagem_id: int

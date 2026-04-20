@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from backend.src.domain.models.usuario import TipoUsuario
 
@@ -20,6 +21,11 @@ class UsuarioBase(BaseModel):
         ..., 
         description="Nível de privilégio no sistema (GERENTE ou RECEPCIONISTA)."
     )
+
+
+class UsuarioAtualizarInput(UsuarioBase):
+    """Schema para atualizar um usuário. A senha é opcional — se omitida, mantém a atual."""
+    senha: Optional[str] = Field(None, min_length=6, description="Nova senha (opcional).")
 
 
 class UsuarioCriarInput(UsuarioBase):
