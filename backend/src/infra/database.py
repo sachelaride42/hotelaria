@@ -1,12 +1,15 @@
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
 
 
 # Em produção, isso viria de variáveis de ambiente (.env)
-load_dotenv()
+env_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=env_path, encoding="utf-8")
+
 # postgresql+asyncpg é o driver assíncrono super rápido para Postgres
 DATABASE_URL = os.getenv(
     "DATABASE_URL_ASYNC",

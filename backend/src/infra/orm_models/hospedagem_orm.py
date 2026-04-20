@@ -14,7 +14,7 @@ class HospedagemORM(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    # Relações com os outros Agregados
+    # Relacoes com os outros Agregados
     cliente_id: Mapped[int] = mapped_column(ForeignKey("clientes.id"), nullable=False)
     quarto_id: Mapped[int] = mapped_column(ForeignKey("quartos.id"), nullable=False)
     reserva_id: Mapped[Optional[int]] = mapped_column(ForeignKey("reservas.id"), nullable=True)

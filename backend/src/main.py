@@ -1,5 +1,7 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import select
 
 # Importação de todos os routers que construímos
 from backend.src.api.routers import (
@@ -14,12 +16,45 @@ from backend.src.api.routers import (
     itens_consumo_router,
     governanca_router
 )
+from backend.src.infra.database import AsyncSessionLocal
+from backend.src.infra.orm_models.usuario_orm import GerenteORM
+from backend.src.domain.models.usuario import TipoUsuario, Usuario
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Executado na inicialização e no encerramento da API."""
+    # --- STARTUP ---
+    async with AsyncSessionLocal() as session:
+        resultado = await session.execute(
+            select(GerenteORM).where(GerenteORM.tipo == TipoUsuario.GERENTE)
+        )
+        gerente_existente = resultado.scalars().first()
+
+        if not gerente_existente:
+            senha_hash = Usuario.gerar_hash("admin123")
+            gerente_padrao = GerenteORM(
+                nome="Administrador",
+                email="admin@hotel.com",
+                senha_hash=senha_hash,
+                tipo=TipoUsuario.GERENTE,
+            )
+            session.add(gerente_padrao)
+            await session.commit()
+            print("✅ Gerente padrão criado  →  email: admin@hotel.com  |  senha: admin123")
+        else:
+            print(f"✅ Gerente já existe: {gerente_existente.email}")
+
+    yield  # A API fica disponível entre o yield e o fim do bloco
+    # --- SHUTDOWN (adicione limpezas aqui se necessário) ---
+
 
 # Inicializa a aplicação FastAPI com os metadados do TCC
 app = FastAPI(
     title="API do Sistema de Gestão Hoteleira",
     description="Backend construído para o Trabalho de Conclusão de Curso (TCC).",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Configuração do CORS (Cross-Origin Resource Sharing)
