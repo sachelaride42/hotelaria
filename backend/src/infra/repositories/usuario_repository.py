@@ -40,6 +40,19 @@ class UsuarioRepository:
             await self.session.rollback()
             raise EmailDuplicadoError("Já existe um utilizador com este e-mail.")
 
+    async def buscar_por_id(self, usuario_id: int) -> Optional[Usuario]:
+        stmt = select(UsuarioORM).where(UsuarioORM.id == usuario_id)
+        resultado = await self.session.execute(stmt)
+        orm_obj = resultado.scalar_one_or_none()
+        return orm_obj.to_domain() if orm_obj else None
+
+    async def deletar(self, usuario_id: int) -> None:
+        stmt = select(UsuarioORM).where(UsuarioORM.id == usuario_id)
+        orm_obj = (await self.session.execute(stmt)).scalar_one_or_none()
+        if orm_obj:
+            await self.session.delete(orm_obj)
+            await self.session.commit()
+
     async def buscar_por_email(self, email: str) -> Optional[Usuario]:
         """
         Devolve a entidade já instanciada como Gerente ou Recepcionista,

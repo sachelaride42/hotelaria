@@ -15,6 +15,42 @@ async def test_salvar_e_buscar_tipo_quarto(db_session):
 
 
 @pytest.mark.asyncio
+async def test_atualizar_tipo_quarto(db_session):
+    """salvar com id preenchido deve atualizar os campos do tipo de quarto."""
+    repo = TipoQuartoRepository(db_session)
+    tipo = await repo.salvar(TipoDeQuarto(nome="Executivo", precoBaseDiaria=Decimal("200"), capacidade=2))
+
+    tipo.nome = "Executivo Plus"
+    tipo.precoBaseDiaria = Decimal("250.00")
+    tipo.capacidade = 3
+    atualizado = await repo.salvar(tipo)
+
+    assert atualizado.nome == "Executivo Plus"
+    assert atualizado.precoBaseDiaria == Decimal("250.00")
+    assert atualizado.capacidade == 3
+
+    buscado = await repo.buscar_por_id(tipo.id)
+    assert buscado.nome == "Executivo Plus"
+
+
+@pytest.mark.asyncio
+async def test_deletar_tipo_quarto(db_session):
+    """deletar deve remover o tipo; buscar_por_id retorna None depois."""
+    repo = TipoQuartoRepository(db_session)
+    tipo = await repo.salvar(TipoDeQuarto(nome="Deletável", precoBaseDiaria=Decimal("50"), capacidade=1))
+
+    await repo.deletar(tipo.id)
+
+    assert await repo.buscar_por_id(tipo.id) is None
+
+
+@pytest.mark.asyncio
+async def test_deletar_tipo_quarto_inexistente_nao_lanca_erro(db_session):
+    repo = TipoQuartoRepository(db_session)
+    await repo.deletar(9999)
+
+
+@pytest.mark.asyncio
 async def test_contar_quartos_por_tipo(db_session):
     tipo_repo = TipoQuartoRepository(db_session)
     quarto_repo = QuartoRepository(db_session)

@@ -59,6 +59,13 @@ class ClienteRepository:
         cliente_orm = resultado.scalar_one_or_none()
         return cliente_orm.to_domain() if cliente_orm else None
 
+    async def deletar(self, cliente_id: int) -> None:
+        stmt = select(ClienteORM).where(ClienteORM.id == cliente_id)
+        orm_obj = (await self.session.execute(stmt)).scalar_one_or_none()
+        if orm_obj:
+            await self.session.delete(orm_obj)
+            await self.session.commit()
+
     async def buscar_por_nome(self, nome: str) -> List[Cliente]:
         """Busca parcial de clientes ignorando maiúsculas e minúsculas."""
         stmt = select(ClienteORM).where(ClienteORM.nome.ilike(f"%{nome}%"))

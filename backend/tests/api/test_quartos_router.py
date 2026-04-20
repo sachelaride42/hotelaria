@@ -94,3 +94,83 @@ async def test_api_atualizar_status_ocupacao_sujo_impede_ocupado(client: AsyncCl
 
     assert response.status_code == 400
     assert "limpo" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_dados_quarto_sucesso(client: AsyncClient, token_gerente: str, setup_tipo_quarto: int):
+    """Gerente atualiza os dados básicos de um quarto com sucesso."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    resp = await client.post("/quartos/", json={"numero": "501", "andar": 5, "tipo_quarto_id": setup_tipo_quarto}, headers=headers)
+    quarto_id = resp.json()["id"]
+
+    payload_update = {"numero": "502", "andar": 6, "tipo_quarto_id": setup_tipo_quarto}
+    response = await client.put(f"/quartos/{quarto_id}", json=payload_update, headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["numero"] == "502"
+    assert response.json()["andar"] == 6
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_dados_quarto_nao_encontrado(client: AsyncClient, token_gerente: str, setup_tipo_quarto: int):
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    payload_update = {"numero": "999", "andar": 1, "tipo_quarto_id": setup_tipo_quarto}
+    response = await client.put("/quartos/9999", json=payload_update, headers=headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_dados_quarto_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str, setup_tipo_quarto: int):
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    payload_update = {"numero": "999", "andar": 1, "tipo_quarto_id": setup_tipo_quarto}
+    response = await client.put("/quartos/1", json=payload_update, headers=headers)
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_quarto_sucesso(client: AsyncClient, token_gerente: str, setup_tipo_quarto: int):
+    """Gerente deleta um quarto livre com sucesso."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    resp = await client.post("/quartos/", json={"numero": "601", "andar": 6, "tipo_quarto_id": setup_tipo_quarto}, headers=headers)
+    quarto_id = resp.json()["id"]
+
+    response = await client.delete(f"/quartos/{quarto_id}", headers=headers)
+    assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_quarto_ocupado_retorna_400(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_tipo_quarto: int):
+    """Não é possível deletar um quarto que está ocupado."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    resp_quarto = await client.post("/quartos/", json={"numero": "701", "andar": 7, "tipo_quarto_id": setup_tipo_quarto}, headers=g_headers)
+    quarto_id = resp_quarto.json()["id"]
+    versao = resp_quarto.json()["versao"]
+
+    resp_cli = await client.post("/clientes/", json={"nome": "Hóspede", "telefone": "111"}, headers=r_headers)
+    from datetime import datetime, timedelta
+    checkin_payload = {
+        "cliente_id": resp_cli.json()["id"],
+        "quarto_id": quarto_id,
+        "data_checkout_previsto": (datetime.now() + timedelta(days=2)).isoformat(),
+        "versao_quarto": versao
+    }
+    await client.post("/hospedagens/checkin", json=checkin_payload, headers=r_headers)
+
+    response = await client.delete(f"/quartos/{quarto_id}", headers=g_headers)
+    assert response.status_code == 400
+    assert "ocupado" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_quarto_nao_encontrado(client: AsyncClient, token_gerente: str):
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.delete("/quartos/9999", headers=headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_quarto_sem_token_retorna_401(client: AsyncClient):
+    response = await client.delete("/quartos/1")
+    assert response.status_code == 401

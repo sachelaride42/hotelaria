@@ -34,6 +34,39 @@ async def test_buscar_cliente_por_nome_parcial(db_session):
 
 
 @pytest.mark.asyncio
+async def test_atualizar_cliente(db_session):
+    """salvar com id preenchido deve atualizar os dados do cliente."""
+    repo = ClienteRepository(db_session)
+    original = await repo.salvar(Cliente(nome="Pedro Antunes", telefone="111", cpf="11122233344"))
+
+    original.nome = "Pedro Antunes Jr."
+    original.telefone = "999"
+    atualizado = await repo.salvar(original)
+
+    assert atualizado.nome == "Pedro Antunes Jr."
+
+    buscado = await repo.buscar_por_id(original.id)
+    assert buscado.telefone == "999"
+
+
+@pytest.mark.asyncio
+async def test_deletar_cliente(db_session):
+    """deletar deve remover o cliente; buscar_por_id retorna None depois."""
+    repo = ClienteRepository(db_session)
+    cliente = await repo.salvar(Cliente(nome="Deletável", telefone="000"))
+
+    await repo.deletar(cliente.id)
+
+    assert await repo.buscar_por_id(cliente.id) is None
+
+
+@pytest.mark.asyncio
+async def test_deletar_cliente_inexistente_nao_lanca_erro(db_session):
+    repo = ClienteRepository(db_session)
+    await repo.deletar(9999)
+
+
+@pytest.mark.asyncio
 async def test_impedir_cadastro_de_cpf_duplicado(db_session):
     """Testa a Exceção (Unicidade de CPF no banco de dados)."""
     repo = ClienteRepository(db_session)

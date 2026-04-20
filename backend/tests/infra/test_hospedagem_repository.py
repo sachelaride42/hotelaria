@@ -67,3 +67,28 @@ async def test_buscar_hospedagem_ativa_por_quarto(db_session, setup_dependencias
     # 4. Testa se o método ignora hospedagens finalizadas
     nao_encontrada = await repo.buscar_ativa_por_quarto(dados["quarto_id"])
     assert nao_encontrada is None
+
+
+@pytest.mark.asyncio
+async def test_deletar_hospedagem(db_session, setup_dependencias_hospedagem):
+    """deletar deve remover a hospedagem; buscar_por_id retorna None depois."""
+    repo = HospedagemRepository(db_session)
+    dados = setup_dependencias_hospedagem
+
+    hospedagem = await repo.salvar(
+        Hospedagem(
+            cliente_id=dados["cliente_id"],
+            quarto_id=dados["quarto_id"],
+            data_checkout_previsto=datetime.now() + timedelta(days=1)
+        )
+    )
+
+    await repo.deletar(hospedagem.id)
+
+    assert await repo.buscar_por_id(hospedagem.id) is None
+
+
+@pytest.mark.asyncio
+async def test_deletar_hospedagem_inexistente_nao_lanca_erro(db_session):
+    repo = HospedagemRepository(db_session)
+    await repo.deletar(9999)

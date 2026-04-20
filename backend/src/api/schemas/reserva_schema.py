@@ -14,6 +14,11 @@ class ReservaCriarInput(BaseModel):
     data_entrada: date = Field(..., description="Data prevista de chegada")
     data_saida: date = Field(..., description="Data prevista de saída")
 
+class ReservaAtualizarInput(BaseModel):
+    data_entrada: date = Field(..., description="Nova data prevista de chegada")
+    data_saida: date = Field(..., description="Nova data prevista de saída")
+
+
 class ReservaOutput(BaseModel):
     id: int
     cliente_id: int

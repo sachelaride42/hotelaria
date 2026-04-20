@@ -13,7 +13,7 @@ from backend.src.api.schemas.hospedagem_schema import HospedagemCheckinInput, Ho
 from backend.src.infra.repositories.reserva_repository import ReservaRepository
 from backend.src.domain.models.reserva import StatusReserva
 from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepository
-from backend.src.api.dependencies.seguranca import get_usuario_logado
+from backend.src.api.dependencies.seguranca import get_usuario_logado, exigir_gerente
 
 router = APIRouter(
     prefix="/hospedagens",
@@ -164,3 +164,22 @@ async def realizar_checkout(
 
     except ConcorrenciaQuartoError as erro_banco:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(erro_banco))
+
+
+@router.delete("/{hospedagem_id}", status_code=status.HTTP_204_NO_CONTENT,
+               dependencies=[Depends(exigir_gerente)])
+async def deletar_hospedagem(
+        hospedagem_id: int,
+        repo: HospedagemRepository = Depends(get_hospedagem_repo)
+):
+    """Remove uma hospedagem. Não é permitido deletar uma hospedagem ATIVA (realize o checkout primeiro)."""
+    from backend.src.domain.models.hospedagem import StatusHospedagem
+    hospedagem = await repo.buscar_por_id(hospedagem_id)
+    if not hospedagem:
+        raise HTTPException(status_code=404, detail="Hospedagem não encontrada.")
+    if hospedagem.status == StatusHospedagem.ATIVA:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é possível remover uma hospedagem ativa. Realize o checkout primeiro."
+        )
+    await repo.deletar(hospedagem_id)

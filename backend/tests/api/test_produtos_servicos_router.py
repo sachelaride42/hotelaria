@@ -89,3 +89,70 @@ async def test_api_criar_produto_recepcionista_retorna_403(client: AsyncClient, 
     payload = {"descricao": "Chá", "preco_padrao": 3.0, "categoria": "PRODUTO"}
     response = await client.post("/catalogo/", json=payload, headers=headers)
     assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_produto_sucesso(client: AsyncClient, token_gerente: str):
+    """Gerente atualiza um item do catálogo com sucesso."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    resp = await client.post("/catalogo/", json={"descricao": "Original", "preco_padrao": 10.0, "categoria": "PRODUTO"}, headers=headers)
+    item_id = resp.json()["id"]
+
+    payload_update = {"descricao": "Atualizado", "preco_padrao": 15.0, "categoria": "SERVICO"}
+    response = await client.put(f"/catalogo/{item_id}", json=payload_update, headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["descricao"] == "Atualizado"
+    assert float(response.json()["preco_padrao"]) == 15.0
+    assert response.json()["categoria"] == "SERVICO"
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_produto_nao_encontrado_retorna_404(client: AsyncClient, token_gerente: str):
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.put("/catalogo/9999", json={"descricao": "Qualquer", "preco_padrao": 1.0, "categoria": "PRODUTO"}, headers=headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_produto_sem_token_retorna_401(client: AsyncClient):
+    response = await client.put("/catalogo/1", json={"descricao": "Qualquer", "preco_padrao": 1.0, "categoria": "PRODUTO"})
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_produto_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str):
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.put("/catalogo/1", json={"descricao": "Qualquer", "preco_padrao": 1.0, "categoria": "PRODUTO"}, headers=headers)
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_produto_sucesso(client: AsyncClient, token_gerente: str):
+    """Gerente deleta um item do catálogo com sucesso."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    resp = await client.post("/catalogo/", json={"descricao": "Para Deletar", "preco_padrao": 5.0, "categoria": "PRODUTO"}, headers=headers)
+    item_id = resp.json()["id"]
+
+    response = await client.delete(f"/catalogo/{item_id}", headers=headers)
+    assert response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_produto_nao_encontrado_retorna_404(client: AsyncClient, token_gerente: str):
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.delete("/catalogo/9999", headers=headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_produto_sem_token_retorna_401(client: AsyncClient):
+    response = await client.delete("/catalogo/1")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_api_deletar_produto_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str):
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.delete("/catalogo/1", headers=headers)
+    assert response.status_code == 403
