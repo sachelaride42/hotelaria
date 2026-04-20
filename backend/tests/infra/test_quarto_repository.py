@@ -73,3 +73,25 @@ async def test_optimistic_locking_impede_sobrescrita_simultanea(db_session, tipo
             # Boom! O SQLAlchemy intercepta a incompatibilidade de versão.
             with pytest.raises(ConcorrenciaQuartoError, match="modificado por outro usuário"):
                 await repo_B.salvar(quarto_B)
+
+
+@pytest.mark.asyncio
+async def test_listar_todos_retorna_todos_os_quartos(db_session, tipo_quarto_padrao):
+    repo = QuartoRepository(db_session)
+    await repo.salvar(Quarto(numero="401", andar=4, tipo_quarto_id=tipo_quarto_padrao.id))
+    await repo.salvar(Quarto(numero="402", andar=4, tipo_quarto_id=tipo_quarto_padrao.id))
+
+    todos = await repo.listar_todos()
+
+    assert len(todos) == 2
+    numeros = {q.numero for q in todos}
+    assert numeros == {"401", "402"}
+
+
+@pytest.mark.asyncio
+async def test_listar_todos_retorna_lista_vazia_sem_quartos(db_session):
+    repo = QuartoRepository(db_session)
+
+    todos = await repo.listar_todos()
+
+    assert todos == []

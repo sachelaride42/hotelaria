@@ -11,7 +11,8 @@ from backend.src.api.routers import (
     reservas_router,
     hospedagens_router,
     produtos_servicos_router,
-    itens_consumo_router
+    itens_consumo_router,
+    governanca_router
 )
 
 # Inicializa a aplicação FastAPI com os metadados do TCC
@@ -49,6 +50,9 @@ app.include_router(produtos_servicos_router.router)
 app.include_router(reservas_router.router)
 app.include_router(hospedagens_router.router)
 app.include_router(itens_consumo_router.router)
+
+# 4. Governança
+app.include_router(governanca_router.router)
 
 @app.get("/", tags=["Health Check"])
 async def root():
