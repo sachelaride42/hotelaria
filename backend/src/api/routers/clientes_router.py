@@ -59,7 +59,7 @@ async def buscar_clientes(
     if nome:
         return await repo.buscar_por_nome(nome)
 
-    return []
+    return await repo.listar_todos()
 
 
 @router.put("/{cliente_id}", response_model=ClienteOutput)

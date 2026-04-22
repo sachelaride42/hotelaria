@@ -14,7 +14,8 @@ from backend.src.api.routers import (
     hospedagens_router,
     produtos_servicos_router,
     itens_consumo_router,
-    governanca_router
+    governanca_router,
+    pagamentos_router
 )
 from backend.src.infra.database import AsyncSessionLocal
 from backend.src.infra.orm_models.usuario_orm import GerenteORM
@@ -85,6 +86,7 @@ app.include_router(produtos_servicos_router.router)
 app.include_router(reservas_router.router)
 app.include_router(hospedagens_router.router)
 app.include_router(itens_consumo_router.router)
+app.include_router(pagamentos_router.router)
 
 # 4. Governança
 app.include_router(governanca_router.router)

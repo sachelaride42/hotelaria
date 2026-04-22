@@ -54,7 +54,16 @@ async def test_api_fluxo_checkin_e_checkout(client: AsyncClient, token_recepcion
     nova_versao_quarto = resp_quarto_apos_checkin.json()["versao"]  # A versão subiu para 2!
 
     # ==========================================
-    # 2. CHECK-OUT
+    # 2. REGISTRAR PAGAMENTO (obrigatório antes do checkout)
+    # ==========================================
+    await client.post("/pagamentos/", json={
+        "hospedagem_id": hospedagem_id,
+        "valor_pago": 1000.00,  # valor alto para cobrir qualquer total calculado
+        "forma_pagamento": "PIX"
+    }, headers=r_headers)
+
+    # ==========================================
+    # 3. CHECK-OUT
     # ==========================================
     payload_checkout = {
         "versao_quarto": nova_versao_quarto
@@ -68,6 +77,98 @@ async def test_api_fluxo_checkin_e_checkout(client: AsyncClient, token_recepcion
     resp_quarto_apos_checkout = await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)
     assert resp_quarto_apos_checkout.json()["status_ocupacao"] == StatusOcupacao.LIVRE.value
     assert resp_quarto_apos_checkout.json()["status_limpeza"] == StatusLimpeza.SUJO.value
+
+
+# ─── Checkout: validação de pagamento (ServicoCheckout) ──────────────────────
+
+@pytest.mark.asyncio
+async def test_api_checkout_sem_pagamento_retorna_400(client: AsyncClient, token_recepcionista: str, setup_dados_iniciais):
+    """UC5: checkout sem nenhum pagamento registrado deve ser bloqueado (400)."""
+    dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    resp_checkin = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=1)).isoformat(),
+        "versao_quarto": dados["quarto_versao"]
+    }, headers=r_headers)
+    hospedagem_id = resp_checkin.json()["id"]
+
+    versao = (await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)).json()["versao"]
+
+    resp = await client.post(
+        f"/hospedagens/{hospedagem_id}/checkout",
+        json={"versao_quarto": versao},
+        headers=r_headers,
+    )
+    assert resp.status_code == 400
+    assert "insuficiente" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_api_checkout_com_pagamento_parcial_retorna_400(client: AsyncClient, token_recepcionista: str, setup_dados_iniciais):
+    """UC5: pagamento parcial (abaixo do total calculado) deve bloquear o checkout (400)."""
+    dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    resp_checkin = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=1)).isoformat(),
+        "versao_quarto": dados["quarto_versao"]
+    }, headers=r_headers)
+    hospedagem_id = resp_checkin.json()["id"]
+
+    # Paga apenas R$0,01 — garante que será insuficiente para qualquer diária
+    await client.post("/pagamentos/", json={
+        "hospedagem_id": hospedagem_id,
+        "valor_pago": 0.01,
+        "forma_pagamento": "PIX"
+    }, headers=r_headers)
+
+    versao = (await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)).json()["versao"]
+
+    resp = await client.post(
+        f"/hospedagens/{hospedagem_id}/checkout",
+        json={"versao_quarto": versao},
+        headers=r_headers,
+    )
+    assert resp.status_code == 400
+    assert "insuficiente" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_api_checkout_com_pagamento_suficiente_finaliza_hospedagem(client: AsyncClient, token_recepcionista: str, setup_dados_iniciais):
+    """UC5: pagamento que cobre o total calculado permite o checkout e libera o quarto."""
+    dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    resp_checkin = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=1)).isoformat(),
+        "versao_quarto": dados["quarto_versao"]
+    }, headers=r_headers)
+    hospedagem_id = resp_checkin.json()["id"]
+
+    # Paga R$1.000 — suficiente para cobrir qualquer diária configurada no setup
+    await client.post("/pagamentos/", json={
+        "hospedagem_id": hospedagem_id,
+        "valor_pago": 1000.00,
+        "forma_pagamento": "CARTAO_CREDITO"
+    }, headers=r_headers)
+
+    versao = (await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)).json()["versao"]
+
+    resp = await client.post(
+        f"/hospedagens/{hospedagem_id}/checkout",
+        json={"versao_quarto": versao},
+        headers=r_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "FINALIZADA"
+    assert float(resp.json()["valor_total"]) > 0
 
 
 @pytest.mark.asyncio
@@ -108,6 +209,14 @@ async def test_api_deletar_hospedagem_finalizada_sucesso(client: AsyncClient, to
 
     resp_quarto = await client.get(f"/quartos/{dados['quarto_id']}", headers=g_headers)
     versao_apos_checkin = resp_quarto.json()["versao"]
+
+    # Registrar pagamento antes do checkout
+    await client.post("/pagamentos/", json={
+        "hospedagem_id": hospedagem_id,
+        "valor_pago": 1000.00,
+        "forma_pagamento": "DINHEIRO"
+    }, headers=g_headers)
+
     await client.post(f"/hospedagens/{hospedagem_id}/checkout", json={"versao_quarto": versao_apos_checkin}, headers=g_headers)
 
     response = await client.delete(f"/hospedagens/{hospedagem_id}", headers=g_headers)

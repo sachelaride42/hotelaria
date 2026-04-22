@@ -72,3 +72,9 @@ class ClienteRepository:
         resultado = await self.session.execute(stmt)
         clientes_orm = resultado.scalars().all()
         return [c.to_domain() for c in clientes_orm]
+
+    async def listar_todos(self) -> List[Cliente]:
+        """Retorna todos os clientes ordenados pelo nome."""
+        stmt = select(ClienteORM).order_by(ClienteORM.nome)
+        resultado = await self.session.execute(stmt)
+        return [c.to_domain() for c in resultado.scalars().all()]

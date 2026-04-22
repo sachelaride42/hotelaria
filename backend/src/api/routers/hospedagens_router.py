@@ -4,9 +4,11 @@ from datetime import datetime
 from typing import List, Optional
 
 from backend.src.domain.services.calculadora_diarias import CalculadoraDeDiarias
+from backend.src.domain.services.servico_checkout import ServicoCheckout
 from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.hospedagem_repository import HospedagemRepository
 from backend.src.infra.repositories.item_consumo_repository import ItemConsumoRepository
+from backend.src.infra.repositories.pagamento_repository import PagamentoRepository
 from backend.src.infra.repositories.quarto_repository import QuartoRepository, ConcorrenciaQuartoError
 from backend.src.domain.models.hospedagem import Hospedagem, StatusHospedagem
 from backend.src.domain.models.quarto import StatusOcupacao
@@ -139,6 +141,7 @@ async def realizar_checkout(
     quarto_repo = QuartoRepository(session)
     tipo_quarto_repo = TipoQuartoRepository(session)
     consumo_repo = ItemConsumoRepository(session)
+    pagamento_repo = PagamentoRepository(session)
     # 1. Busca e valida a Hospedagem
     hospedagem = await hosp_repo.buscar_por_id(hospedagem_id)
     if not hospedagem:
@@ -171,6 +174,13 @@ async def realizar_checkout(
 
     # O Grande Total a ser cobrado no cartão do cliente
     valor_final = valor_diarias + total_consumo
+
+    # 4b. Valida se o total já pago cobre o valor final (ServicoCheckout)
+    total_pago = await pagamento_repo.somar_total_pago(hospedagem_id)
+    try:
+        ServicoCheckout.validar_pagamento_suficiente(valor_final, total_pago)
+    except ValueError as erro_pagamento:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(erro_pagamento))
 
     # 5. Executa as Regras de Negócio nas Entidades (Domínio)
     try:

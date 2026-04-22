@@ -89,3 +89,29 @@ async def test_api_deletar_cliente_recepcionista_retorna_403(client: AsyncClient
 
     response = await client.delete(f"/clientes/{cliente_id}", headers=r_headers)
     assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_api_listar_todos_clientes_sem_filtro(client: AsyncClient, token_recepcionista: str):
+    """GET /clientes/ sem parâmetros deve retornar todos os clientes cadastrados."""
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    # Cadastra dois clientes
+    await client.post("/clientes/", json={"nome": "Zara", "telefone": "111"}, headers=headers)
+    await client.post("/clientes/", json={"nome": "Ana", "telefone": "222"}, headers=headers)
+
+    response = await client.get("/clientes/", headers=headers)
+    assert response.status_code == 200
+    nomes = [c["nome"] for c in response.json()]
+    assert "Zara" in nomes
+    assert "Ana" in nomes
+    assert len(response.json()) == 2
+
+
+@pytest.mark.asyncio
+async def test_api_listar_todos_clientes_banco_vazio(client: AsyncClient, token_recepcionista: str):
+    """GET /clientes/ sem parâmetros com banco vazio deve retornar lista vazia."""
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.get("/clientes/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == []
