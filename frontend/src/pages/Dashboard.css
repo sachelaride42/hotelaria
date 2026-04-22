@@ -1,0 +1,210 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Header ── */
+.dashboard-header {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* ── Stats strip ── */
+.dashboard-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.stat {
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat strong {
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.stat--livre strong  { color: #16a34a; }
+.stat--ocupado strong { color: #dc2626; }
+.stat--manutencao strong { color: #d97706; }
+
+/* ── Filters ── */
+.dashboard-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.filter-btn--active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── Feedback states ── */
+.dashboard-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.dashboard-feedback--error {
+  color: #dc2626;
+}
+
+.error-detail {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Room grid ── */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 16px;
+}
+
+/* ── Room card ── */
+.room-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--bg);
+  transition: box-shadow 0.2s, border-color 0.2s;
+  cursor: default;
+}
+
+.room-card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--accent-border);
+}
+
+/* Status-specific left accent border */
+.room-card--livre    { border-left: 3px solid #16a34a; }
+.room-card--ocupado  { border-left: 3px solid #dc2626; }
+.room-card--manutencao { border-left: 3px solid #d97706; }
+
+.room-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.room-card__number {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.room-card__status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.room-card--livre    .room-card__status-badge { background: #dcfce7; color: #15803d; }
+.room-card--ocupado  .room-card__status-badge { background: #fee2e2; color: #b91c1c; }
+.room-card--manutencao .room-card__status-badge { background: #fef3c7; color: #b45309; }
+
+.room-card__info {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.room-card__info > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.room-card__info dt {
+  font-size: 12px;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.room-card__info dd {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-h);
+  margin: 0;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-card__limpeza--sujo { color: #d97706; }
+.room-card__limpeza--limpo { color: #16a34a; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rooms-grid {
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 12px;
+  }
+}
