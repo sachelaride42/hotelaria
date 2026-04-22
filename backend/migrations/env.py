@@ -17,6 +17,7 @@ from backend.src.infra.orm_models.hospedagem_orm import HospedagemORM
 from backend.src.infra.orm_models.item_consumo_orm import ItemConsumoORM
 from backend.src.infra.orm_models.produto_servico_orm import ProdutoServicoORM
 from backend.src.infra.orm_models.usuario_orm import UsuarioORM
+from backend.src.infra.orm_models.pagamento_orm import PagamentoORM
 
 import os
 from dotenv import load_dotenv
