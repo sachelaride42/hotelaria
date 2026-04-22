@@ -46,6 +46,24 @@ async def listar_reservas(
     )
 
 
+@router.get("/disponibilidade/")
+async def verificar_disponibilidade(
+    tipo_quarto_id: int = Query(..., description="ID do tipo de quarto"),
+    data_entrada: date = Query(..., description="Data de entrada desejada"),
+    data_saida: date = Query(..., description="Data de saída desejada"),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Verifica quantos quartos de um tipo estão livres para o período."""
+    repo = ReservaRepository(session)
+    quarto_repo = QuartoRepository(session)
+
+    total = await quarto_repo.contar_por_tipo(tipo_quarto_id)
+    conflitantes = await repo.contar_reservas_conflitantes(tipo_quarto_id, data_entrada, data_saida)
+    livres = max(0, total - conflitantes)
+
+    return {"disponivel": livres > 0, "quartos_livres": livres, "total": total}
+
+
 @router.get("/{reserva_id}", response_model=ReservaOutput)
 async def buscar_reserva(
     reserva_id: int,
@@ -110,6 +128,45 @@ async def criar_reserva(
             data_entrada=payload.data_entrada,
             data_saida=payload.data_saida,
             valor_total_previsto=valor_calculado
+        )
+
+        reserva_salva = await repo.salvar(nova_reserva)
+        return reserva_salva
+
+    except ValueError as erro_dominio:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(erro_dominio))
+
+
+@router.post("/lista-espera/", response_model=ReservaOutput, status_code=status.HTTP_201_CREATED)
+async def criar_reserva_lista_espera(
+        payload: ReservaCriarInput,
+        session: AsyncSession = Depends(get_db_session),
+):
+    """Cria uma reserva em lista de espera, sem verificar disponibilidade."""
+    repo = ReservaRepository(session)
+    tipo_quarto_repo = TipoQuartoRepository(session)
+
+    try:
+        tipo_quarto = await tipo_quarto_repo.buscar_por_id(payload.tipo_quarto_id)
+        if not tipo_quarto:
+            raise HTTPException(status_code=404, detail="Tipo de quarto não encontrado.")
+
+        dt_entrada = datetime.combine(payload.data_entrada, PoliticasHotel.HORARIO_PADRAO_CHECKIN)
+        dt_saida = datetime.combine(payload.data_saida, PoliticasHotel.HORARIO_PADRAO_CHECKOUT)
+
+        valor_calculado = CalculadoraDeDiarias.calcular_total(
+            data_checkin=dt_entrada,
+            data_checkout=dt_saida,
+            valor_diaria=tipo_quarto.precoBaseDiaria
+        )
+
+        nova_reserva = Reserva(
+            cliente_id=payload.cliente_id,
+            tipo_quarto_id=payload.tipo_quarto_id,
+            data_entrada=payload.data_entrada,
+            data_saida=payload.data_saida,
+            valor_total_previsto=valor_calculado,
+            status=StatusReserva.LISTA_ESPERA
         )
 
         reserva_salva = await repo.salvar(nova_reserva)

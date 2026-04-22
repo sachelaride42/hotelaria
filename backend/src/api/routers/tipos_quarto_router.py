@@ -8,12 +8,12 @@ from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepo
 from backend.src.infra.repositories.quarto_repository import QuartoRepository
 from backend.src.domain.models.tipo_quarto import TipoDeQuarto
 from backend.src.api.schemas.tipo_quarto_schema import TipoQuartoBase, TipoQuartoOutput
-from backend.src.api.dependencies.seguranca import exigir_gerente
+from backend.src.api.dependencies.seguranca import exigir_gerente, get_usuario_logado
 
 router = APIRouter(
     prefix="/tipos-quarto",
     tags=["Tipos de Quarto"],
-    dependencies=[Depends(exigir_gerente)]
+    dependencies=[Depends(get_usuario_logado)]
 )
 
 def get_tipo_repo(session: AsyncSession = Depends(get_db_session)):
@@ -44,13 +44,15 @@ async def buscar_tipo_quarto(
     return tipo
 
 
-@router.post("/", response_model=TipoQuartoOutput, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=TipoQuartoOutput, status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(exigir_gerente)])
 async def criar_tipo_quarto(payload: TipoQuartoBase, repo: TipoQuartoRepository = Depends(get_tipo_repo)):
     novo_tipo = TipoDeQuarto(**payload.model_dump())
     return await repo.salvar(novo_tipo)
 
 
-@router.put("/{tipo_id}", response_model=TipoQuartoOutput)
+@router.put("/{tipo_id}", response_model=TipoQuartoOutput,
+            dependencies=[Depends(exigir_gerente)])
 async def atualizar_tipo_quarto(
     tipo_id: int,
     payload: TipoQuartoBase,
@@ -67,7 +69,8 @@ async def atualizar_tipo_quarto(
     return await repo.salvar(tipo_existente)
 
 
-@router.delete("/{tipo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{tipo_id}", status_code=status.HTTP_204_NO_CONTENT,
+               dependencies=[Depends(exigir_gerente)])
 async def deletar_tipo_quarto(
     tipo_id: int,
     repo: TipoQuartoRepository = Depends(get_tipo_repo),

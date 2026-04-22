@@ -1,0 +1,151 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  text-align: left;
+}
+
+/* ── Topbar ── */
+.topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+
+.topbar-nav {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  padding: 8px 0 0;
+}
+
+.topbar-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 8px 20px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.topbar-btn:hover {
+  color: var(--text-h);
+  background: var(--accent-bg);
+}
+
+.topbar-btn--active {
+  color: var(--text-h);
+  border-color: var(--border);
+  background: var(--bg);
+  position: relative;
+  bottom: -1px;
+}
+
+/* ── Body (sidebar + content) ── */
+.layout-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-h);
+  margin: 0 0 8px;
+  padding: 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-section__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 8px 8px 4px;
+  margin: 0;
+}
+
+.sidebar-link {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.35;
+}
+
+.sidebar-link:hover {
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.sidebar-link--active {
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── Main content ── */
+.main-content {
+  flex: 1;
+  padding: 28px 32px;
+  overflow-y: auto;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .layout-body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .sidebar-title,
+  .sidebar-section__label {
+    display: none;
+  }
+
+  .sidebar-section {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .main-content {
+    padding: 20px 16px;
+  }
+}
