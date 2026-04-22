@@ -133,3 +133,79 @@ async def test_api_deletar_hospedagem_recepcionista_retorna_403(client: AsyncCli
     r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
     response = await client.delete("/hospedagens/1", headers=r_headers)
     assert response.status_code == 403
+
+
+# --- GET /hospedagens/ ---
+
+@pytest.mark.asyncio
+async def test_api_listar_hospedagens_vazio(client: AsyncClient, token_recepcionista: str):
+    """Lista retorna vazia quando não há hospedagens."""
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.get("/hospedagens/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+@pytest.mark.asyncio
+async def test_api_listar_hospedagens_com_registros(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_dados_iniciais):
+    """Após check-in, hospedagem aparece na listagem."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    dados = setup_dados_iniciais
+    checkout_previsto = (datetime.now() + timedelta(days=2)).isoformat()
+    payload_checkin = {"cliente_id": dados["cliente_id"], "quarto_id": dados["quarto_id"], "data_checkout_previsto": checkout_previsto, "versao_quarto": dados["quarto_versao"]}
+    await client.post("/hospedagens/checkin", json=payload_checkin, headers=r_headers)
+
+    response = await client.get("/hospedagens/", headers=r_headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+
+@pytest.mark.asyncio
+async def test_api_listar_hospedagens_filtro_por_status(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_dados_iniciais):
+    """Filtro por status retorna apenas hospedagens naquele estado."""
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    dados = setup_dados_iniciais
+    checkout_previsto = (datetime.now() + timedelta(days=2)).isoformat()
+    payload_checkin = {"cliente_id": dados["cliente_id"], "quarto_id": dados["quarto_id"], "data_checkout_previsto": checkout_previsto, "versao_quarto": dados["quarto_versao"]}
+    await client.post("/hospedagens/checkin", json=payload_checkin, headers=r_headers)
+
+    response = await client.get("/hospedagens/?status=ATIVA", headers=r_headers)
+    assert response.status_code == 200
+    assert all(h["status"] == "ATIVA" for h in response.json())
+
+
+@pytest.mark.asyncio
+async def test_api_listar_hospedagens_sem_token_retorna_401(client: AsyncClient):
+    response = await client.get("/hospedagens/")
+    assert response.status_code == 401
+
+
+# --- GET /hospedagens/{id} ---
+
+@pytest.mark.asyncio
+async def test_api_buscar_hospedagem_por_id_sucesso(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_dados_iniciais):
+    """Usuário logado busca hospedagem existente por ID."""
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    dados = setup_dados_iniciais
+    checkout_previsto = (datetime.now() + timedelta(days=2)).isoformat()
+    payload_checkin = {"cliente_id": dados["cliente_id"], "quarto_id": dados["quarto_id"], "data_checkout_previsto": checkout_previsto, "versao_quarto": dados["quarto_versao"]}
+    resp = await client.post("/hospedagens/checkin", json=payload_checkin, headers=r_headers)
+    hospedagem_id = resp.json()["id"]
+
+    response = await client.get(f"/hospedagens/{hospedagem_id}", headers=r_headers)
+    assert response.status_code == 200
+    assert response.json()["id"] == hospedagem_id
+
+
+@pytest.mark.asyncio
+async def test_api_buscar_hospedagem_por_id_inexistente_retorna_404(client: AsyncClient, token_recepcionista: str):
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.get("/hospedagens/9999", headers=headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_buscar_hospedagem_sem_token_retorna_401(client: AsyncClient):
+    response = await client.get("/hospedagens/1")
+    assert response.status_code == 401

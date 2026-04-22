@@ -2,8 +2,9 @@ from sqlalchemy import update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm.exc import StaleDataError
+from typing import Optional
 
-from backend.src.domain.models.quarto import Quarto
+from backend.src.domain.models.quarto import Quarto, StatusOcupacao, StatusLimpeza
 from backend.src.infra.orm_models.quarto_orm import QuartoORM
 
 
@@ -96,10 +97,22 @@ class QuartoRepository:
         resultado = await self.session.execute(stmt)
         return resultado.scalar_one()
 
-    async def listar_todos(self) -> list[Quarto]:
-        """Lista todos os quartos cadastrados."""
+    async def listar_todos(
+        self,
+        status_ocupacao: Optional[StatusOcupacao] = None,
+        status_limpeza: Optional[StatusLimpeza] = None,
+        andar: Optional[int] = None,
+        tipo_quarto_id: Optional[int] = None,
+    ) -> list[Quarto]:
         stmt = select(QuartoORM)
+        if status_ocupacao is not None:
+            stmt = stmt.where(QuartoORM.status_ocupacao == status_ocupacao)
+        if status_limpeza is not None:
+            stmt = stmt.where(QuartoORM.status_limpeza == status_limpeza)
+        if andar is not None:
+            stmt = stmt.where(QuartoORM.andar == andar)
+        if tipo_quarto_id is not None:
+            stmt = stmt.where(QuartoORM.tipo_quarto_id == tipo_quarto_id)
         resultado = await self.session.execute(stmt)
-        quartos_orm = resultado.scalars().all()
-        return [q.to_domain() for q in quartos_orm]
+        return [q.to_domain() for q in resultado.scalars().all()]
 

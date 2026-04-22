@@ -47,6 +47,25 @@ class ReservaRepository:
         return reserva_orm.to_domain() if reserva_orm else None
 
 
+    async def listar(
+        self,
+        cliente_id: Optional[int] = None,
+        status: Optional[StatusReserva] = None,
+        data_entrada: Optional[date] = None,
+        data_saida: Optional[date] = None,
+    ) -> List[Reserva]:
+        stmt = select(ReservaORM)
+        if cliente_id is not None:
+            stmt = stmt.where(ReservaORM.cliente_id == cliente_id)
+        if status is not None:
+            stmt = stmt.where(ReservaORM.status == status)
+        if data_entrada is not None:
+            stmt = stmt.where(ReservaORM.data_entrada >= data_entrada)
+        if data_saida is not None:
+            stmt = stmt.where(ReservaORM.data_saida <= data_saida)
+        resultado = await self.session.execute(stmt)
+        return [orm.to_domain() for orm in resultado.scalars().all()]
+
     async def deletar(self, reserva_id: int) -> None:
         stmt = select(ReservaORM).where(ReservaORM.id == reserva_id)
         orm_obj = (await self.session.execute(stmt)).scalar_one_or_none()

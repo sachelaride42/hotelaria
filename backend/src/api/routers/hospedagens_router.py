@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession, session
 from datetime import datetime
+from typing import List, Optional
 
 from backend.src.domain.services.calculadora_diarias import CalculadoraDeDiarias
 from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.hospedagem_repository import HospedagemRepository
 from backend.src.infra.repositories.item_consumo_repository import ItemConsumoRepository
 from backend.src.infra.repositories.quarto_repository import QuartoRepository, ConcorrenciaQuartoError
-from backend.src.domain.models.hospedagem import Hospedagem
+from backend.src.domain.models.hospedagem import Hospedagem, StatusHospedagem
 from backend.src.domain.models.quarto import StatusOcupacao
 from backend.src.api.schemas.hospedagem_schema import HospedagemCheckinInput, HospedagemOutput, HospedagemCheckoutInput
 from backend.src.infra.repositories.reserva_repository import ReservaRepository
@@ -28,6 +29,29 @@ def get_hospedagem_repo(session: AsyncSession = Depends(get_db_session)) -> Hosp
 
 def get_quarto_repo(session: AsyncSession = Depends(get_db_session)) -> QuartoRepository:
     return QuartoRepository(session)
+
+
+@router.get("/", response_model=List[HospedagemOutput])
+async def listar_hospedagens(
+    cliente_id: Optional[int] = Query(None, description="Filtrar por cliente"),
+    status_hospedagem: Optional[StatusHospedagem] = Query(None, alias="status", description="Filtrar por status"),
+    quarto_id: Optional[int] = Query(None, description="Filtrar por quarto"),
+    repo: HospedagemRepository = Depends(get_hospedagem_repo)
+):
+    """Lista todas as hospedagens com filtros opcionais."""
+    return await repo.listar(cliente_id=cliente_id, status=status_hospedagem, quarto_id=quarto_id)
+
+
+@router.get("/{hospedagem_id}", response_model=HospedagemOutput)
+async def buscar_hospedagem(
+    hospedagem_id: int,
+    repo: HospedagemRepository = Depends(get_hospedagem_repo)
+):
+    """Retorna uma hospedagem pelo ID."""
+    hospedagem = await repo.buscar_por_id(hospedagem_id)
+    if not hospedagem:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hospedagem não encontrada.")
+    return hospedagem
 
 
 @router.post("/checkin", response_model=HospedagemOutput, status_code=status.HTTP_201_CREATED)
@@ -173,7 +197,6 @@ async def deletar_hospedagem(
         repo: HospedagemRepository = Depends(get_hospedagem_repo)
 ):
     """Remove uma hospedagem. Não é permitido deletar uma hospedagem ATIVA (realize o checkout primeiro)."""
-    from backend.src.domain.models.hospedagem import StatusHospedagem
     hospedagem = await repo.buscar_por_id(hospedagem_id)
     if not hospedagem:
         raise HTTPException(status_code=404, detail="Hospedagem não encontrada.")

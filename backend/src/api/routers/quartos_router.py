@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional
 
-# Importações do nosso projeto
-from backend.src.infra.database import get_db_session  # (Você precisará criar esse gerador de sessão no database.py)
+from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.quarto_repository import QuartoRepository, ConcorrenciaQuartoError
-from backend.src.domain.models.quarto import Quarto
+from backend.src.domain.models.quarto import Quarto, StatusOcupacao, StatusLimpeza
 from backend.src.api.schemas.quarto_schema import (
     QuartoCriarInput,
     QuartoAtualizarDadosInput,
@@ -24,6 +24,23 @@ router = APIRouter(
 # Injeção de dependência: O FastAPI cuida de criar o repositório para nós
 def get_quarto_repo(session: AsyncSession = Depends(get_db_session)) -> QuartoRepository:
     return QuartoRepository(session)
+
+
+@router.get("/", response_model=List[QuartoOutput])
+async def listar_quartos(
+    status_ocupacao: Optional[StatusOcupacao] = Query(None, description="Filtrar por status de ocupação"),
+    status_limpeza: Optional[StatusLimpeza] = Query(None, description="Filtrar por status de limpeza"),
+    andar: Optional[int] = Query(None, description="Filtrar por andar"),
+    tipo_quarto_id: Optional[int] = Query(None, description="Filtrar por tipo de quarto"),
+    repo: QuartoRepository = Depends(get_quarto_repo)
+):
+    """Lista todos os quartos com filtros opcionais."""
+    return await repo.listar_todos(
+        status_ocupacao=status_ocupacao,
+        status_limpeza=status_limpeza,
+        andar=andar,
+        tipo_quarto_id=tipo_quarto_id,
+    )
 
 
 @router.post("/", response_model=QuartoOutput, status_code=status.HTTP_201_CREATED,

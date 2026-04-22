@@ -139,3 +139,81 @@ async def test_api_deletar_usuario_recepcionista_retorna_403(client: AsyncClient
     headers = {"Authorization": f"Bearer {token_recepcionista}"}
     response = await client.delete("/usuarios/1", headers=headers)
     assert response.status_code == 403
+
+
+# --- GET /usuarios/ ---
+
+@pytest.mark.asyncio
+async def test_api_listar_usuarios_vazio(client: AsyncClient, token_gerente: str):
+    """Lista retorna vazia quando não há usuários além do gerente de teste."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.get("/usuarios/", headers=headers)
+    assert response.status_code == 200
+    dados = response.json()
+    assert isinstance(dados, list)
+    assert len(dados) >= 1  # o gerente criado pelo fixture está presente
+
+
+@pytest.mark.asyncio
+async def test_api_listar_usuarios_com_registros(client: AsyncClient, token_gerente: str):
+    """Após criar um recepcionista, ele aparece na listagem."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    await client.post("/usuarios/", json={"nome": "Recep Lista", "email": "rlista@hotel.com", "senha": "senha123", "tipo": "RECEPCIONISTA"}, headers=headers)
+
+    response = await client.get("/usuarios/", headers=headers)
+    assert response.status_code == 200
+    emails = [u["email"] for u in response.json()]
+    assert "rlista@hotel.com" in emails
+
+
+@pytest.mark.asyncio
+async def test_api_listar_usuarios_filtro_por_tipo(client: AsyncClient, token_gerente: str):
+    """Filtro por tipo retorna apenas usuários do tipo indicado."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    await client.post("/usuarios/", json={"nome": "Recep Filtro", "email": "rfiltro@hotel.com", "senha": "senha123", "tipo": "RECEPCIONISTA"}, headers=headers)
+
+    response = await client.get("/usuarios/?tipo=RECEPCIONISTA", headers=headers)
+    assert response.status_code == 200
+    tipos = [u["tipo"] for u in response.json()]
+    assert all(t == "RECEPCIONISTA" for t in tipos)
+
+
+@pytest.mark.asyncio
+async def test_api_listar_usuarios_sem_token_retorna_401(client: AsyncClient):
+    response = await client.get("/usuarios/")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_api_listar_usuarios_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str):
+    """Apenas gerentes podem listar usuários."""
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.get("/usuarios/", headers=headers)
+    assert response.status_code == 403
+
+
+# --- GET /usuarios/{id} ---
+
+@pytest.mark.asyncio
+async def test_api_buscar_usuario_por_id_sucesso(client: AsyncClient, token_gerente: str):
+    """Gerente busca usuário existente por ID."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    resp_criar = await client.post("/usuarios/", json={"nome": "Busca ID", "email": "buscaid@hotel.com", "senha": "senha123", "tipo": "RECEPCIONISTA"}, headers=headers)
+    usuario_id = resp_criar.json()["id"]
+
+    response = await client.get(f"/usuarios/{usuario_id}", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["email"] == "buscaid@hotel.com"
+
+
+@pytest.mark.asyncio
+async def test_api_buscar_usuario_por_id_inexistente_retorna_404(client: AsyncClient, token_gerente: str):
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.get("/usuarios/9999", headers=headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_buscar_usuario_sem_token_retorna_401(client: AsyncClient):
+    response = await client.get("/usuarios/1")
+    assert response.status_code == 401

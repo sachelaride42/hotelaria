@@ -174,3 +174,60 @@ async def test_api_deletar_quarto_nao_encontrado(client: AsyncClient, token_gere
 async def test_api_deletar_quarto_sem_token_retorna_401(client: AsyncClient):
     response = await client.delete("/quartos/1")
     assert response.status_code == 401
+
+
+# --- GET /quartos/ ---
+
+@pytest.mark.asyncio
+async def test_api_listar_quartos_vazio(client: AsyncClient, token_recepcionista: str):
+    """Lista retorna vazia quando não há quartos."""
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.get("/quartos/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+@pytest.mark.asyncio
+async def test_api_listar_quartos_com_registros(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_tipo_quarto: int):
+    """Quartos criados aparecem na listagem."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    await client.post("/quartos/", json={"numero": "301", "andar": 3, "tipo_quarto_id": setup_tipo_quarto}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "302", "andar": 3, "tipo_quarto_id": setup_tipo_quarto}, headers=g_headers)
+
+    response = await client.get("/quartos/", headers=r_headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+@pytest.mark.asyncio
+async def test_api_listar_quartos_filtro_por_andar(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_tipo_quarto: int):
+    """Filtro por andar retorna apenas quartos do andar especificado."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    await client.post("/quartos/", json={"numero": "101", "andar": 1, "tipo_quarto_id": setup_tipo_quarto}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "201", "andar": 2, "tipo_quarto_id": setup_tipo_quarto}, headers=g_headers)
+
+    response = await client.get("/quartos/?andar=1", headers=r_headers)
+    assert response.status_code == 200
+    dados = response.json()
+    assert len(dados) == 1
+    assert dados[0]["andar"] == 1
+
+
+@pytest.mark.asyncio
+async def test_api_listar_quartos_filtro_por_status_ocupacao(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_tipo_quarto: int):
+    """Filtro por status_ocupacao retorna apenas quartos naquele estado."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    await client.post("/quartos/", json={"numero": "401", "andar": 4, "tipo_quarto_id": setup_tipo_quarto}, headers=g_headers)
+
+    response = await client.get("/quartos/?status_ocupacao=LIVRE", headers=r_headers)
+    assert response.status_code == 200
+    assert all(q["status_ocupacao"] == "LIVRE" for q in response.json())
+
+
+@pytest.mark.asyncio
+async def test_api_listar_quartos_sem_token_retorna_401(client: AsyncClient):
+    response = await client.get("/quartos/")
+    assert response.status_code == 401

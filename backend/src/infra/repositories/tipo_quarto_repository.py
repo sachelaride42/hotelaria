@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import Optional
+from typing import Optional, List
+from decimal import Decimal
 
 from backend.src.domain.models.tipo_quarto import TipoDeQuarto
 from backend.src.infra.orm_models.tipo_quarto_orm import TipoDeQuartoORM
@@ -37,6 +38,15 @@ class TipoQuartoRepository:
         if orm_obj:
             await self.session.delete(orm_obj)
             await self.session.commit()
+
+    async def listar(self, capacidade_minima: Optional[int] = None, preco_maximo: Optional[Decimal] = None) -> List[TipoDeQuarto]:
+        stmt = select(TipoDeQuartoORM)
+        if capacidade_minima is not None:
+            stmt = stmt.where(TipoDeQuartoORM.capacidade >= capacidade_minima)
+        if preco_maximo is not None:
+            stmt = stmt.where(TipoDeQuartoORM.precoBaseDiaria <= preco_maximo)
+        resultado = await self.session.execute(stmt)
+        return [orm.to_domain() for orm in resultado.scalars().all()]
 
     async def buscar_por_id(self, tipo_id: int) -> Optional[TipoDeQuarto]:
         stmt = select(TipoDeQuartoORM).where(TipoDeQuartoORM.id == tipo_id)

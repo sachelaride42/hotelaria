@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from datetime import datetime, time
+from typing import List, Optional
+from datetime import datetime, time, date
 
 from backend.src.api.routers.quartos_router import get_quarto_repo
 from backend.src.domain.config_hotel import PoliticasHotel
@@ -10,7 +10,7 @@ from backend.src.domain.services.servico_disponibilidade import ServicoDisponibi
 from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.quarto_repository import QuartoRepository
 from backend.src.infra.repositories.reserva_repository import ReservaRepository
-from backend.src.domain.models.reserva import Reserva
+from backend.src.domain.models.reserva import Reserva, StatusReserva
 from backend.src.api.schemas.reserva_schema import ReservaCriarInput, ReservaAtualizarInput, ReservaOutput
 from backend.src.domain.services.calculadora_diarias import CalculadoraDeDiarias
 from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepository
@@ -28,6 +28,35 @@ def get_reserva_repo(session: AsyncSession = Depends(get_db_session)) -> Reserva
 
 def get_tipo_quarto_repo(session: AsyncSession = Depends(get_db_session)) -> TipoQuartoRepository:
     return TipoQuartoRepository(session)
+
+@router.get("/", response_model=List[ReservaOutput])
+async def listar_reservas(
+    cliente_id: Optional[int] = Query(None, description="Filtrar por cliente"),
+    status_reserva: Optional[StatusReserva] = Query(None, alias="status", description="Filtrar por status"),
+    data_entrada: Optional[date] = Query(None, description="Data de entrada mínima"),
+    data_saida: Optional[date] = Query(None, description="Data de saída máxima"),
+    repo: ReservaRepository = Depends(get_reserva_repo)
+):
+    """Lista todas as reservas com filtros opcionais."""
+    return await repo.listar(
+        cliente_id=cliente_id,
+        status=status_reserva,
+        data_entrada=data_entrada,
+        data_saida=data_saida,
+    )
+
+
+@router.get("/{reserva_id}", response_model=ReservaOutput)
+async def buscar_reserva(
+    reserva_id: int,
+    repo: ReservaRepository = Depends(get_reserva_repo)
+):
+    """Retorna uma reserva pelo ID."""
+    reserva = await repo.buscar_por_id(reserva_id)
+    if not reserva:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva não encontrada.")
+    return reserva
+
 
 @router.post("/", response_model=ReservaOutput, status_code=status.HTTP_201_CREATED)
 async def criar_reserva(
@@ -115,7 +144,6 @@ async def atualizar_reserva(
         session: AsyncSession = Depends(get_db_session),
 ):
     """Atualiza as datas de uma reserva e recalcula o valor previsto. Não permitido para reservas UTILIZADAS ou CANCELADAS."""
-    from backend.src.domain.models.reserva import StatusReserva
     repo = ReservaRepository(session)
     tipo_quarto_repo = TipoQuartoRepository(session)
 
@@ -157,7 +185,6 @@ async def deletar_reserva(
         repo: ReservaRepository = Depends(get_reserva_repo)
 ):
     """Remove uma reserva. Não permitido para reservas UTILIZADAS (vinculadas a uma hospedagem)."""
-    from backend.src.domain.models.reserva import StatusReserva
     reserva = await repo.buscar_por_id(reserva_id)
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva não encontrada.")

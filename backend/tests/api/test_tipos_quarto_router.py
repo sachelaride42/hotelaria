@@ -125,3 +125,80 @@ async def test_api_deletar_tipo_quarto_recepcionista_retorna_403(client: AsyncCl
     headers = {"Authorization": f"Bearer {token_recepcionista}"}
     response = await client.delete("/tipos-quarto/1", headers=headers)
     assert response.status_code == 403
+
+
+# --- GET /tipos-quarto/ ---
+
+@pytest.mark.asyncio
+async def test_api_listar_tipos_quarto_vazio(client: AsyncClient, token_gerente: str):
+    """Lista retorna vazia quando não há tipos cadastrados."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.get("/tipos-quarto/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+@pytest.mark.asyncio
+async def test_api_listar_tipos_quarto_com_registros(client: AsyncClient, token_gerente: str):
+    """Após criar tipos, eles aparecem na listagem."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    await client.post("/tipos-quarto/", json={"nome": "Standard", "precoBaseDiaria": 100.0, "capacidade": 2}, headers=headers)
+    await client.post("/tipos-quarto/", json={"nome": "Suite", "precoBaseDiaria": 300.0, "capacidade": 4}, headers=headers)
+
+    response = await client.get("/tipos-quarto/", headers=headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+@pytest.mark.asyncio
+async def test_api_listar_tipos_quarto_filtro_capacidade(client: AsyncClient, token_gerente: str):
+    """Filtro por capacidade_minima retorna apenas tipos compatíveis."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    await client.post("/tipos-quarto/", json={"nome": "Simples", "precoBaseDiaria": 100.0, "capacidade": 1}, headers=headers)
+    await client.post("/tipos-quarto/", json={"nome": "Familia", "precoBaseDiaria": 200.0, "capacidade": 4}, headers=headers)
+
+    response = await client.get("/tipos-quarto/?capacidade_minima=3", headers=headers)
+    assert response.status_code == 200
+    dados = response.json()
+    assert len(dados) == 1
+    assert dados[0]["nome"] == "Familia"
+
+
+@pytest.mark.asyncio
+async def test_api_listar_tipos_quarto_sem_token_retorna_401(client: AsyncClient):
+    response = await client.get("/tipos-quarto/")
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_api_listar_tipos_quarto_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str):
+    """Apenas gerentes podem listar tipos de quarto."""
+    headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.get("/tipos-quarto/", headers=headers)
+    assert response.status_code == 403
+
+
+# --- GET /tipos-quarto/{id} ---
+
+@pytest.mark.asyncio
+async def test_api_buscar_tipo_quarto_por_id_sucesso(client: AsyncClient, token_gerente: str):
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    resp = await client.post("/tipos-quarto/", json={"nome": "Executivo", "precoBaseDiaria": 250.0, "capacidade": 2}, headers=headers)
+    tipo_id = resp.json()["id"]
+
+    response = await client.get(f"/tipos-quarto/{tipo_id}", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["nome"] == "Executivo"
+
+
+@pytest.mark.asyncio
+async def test_api_buscar_tipo_quarto_por_id_inexistente_retorna_404(client: AsyncClient, token_gerente: str):
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    response = await client.get("/tipos-quarto/9999", headers=headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_buscar_tipo_quarto_sem_token_retorna_401(client: AsyncClient):
+    response = await client.get("/tipos-quarto/1")
+    assert response.status_code == 401

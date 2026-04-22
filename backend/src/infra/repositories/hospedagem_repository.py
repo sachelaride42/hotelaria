@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import Optional
+from typing import Optional, List
 
 from backend.src.domain.models.hospedagem import Hospedagem, StatusHospedagem
 from backend.src.infra.orm_models.hospedagem_orm import HospedagemORM
@@ -48,6 +48,22 @@ class HospedagemRepository:
         if orm_obj:
             await self.session.delete(orm_obj)
             await self.session.commit()
+
+    async def listar(
+        self,
+        cliente_id: Optional[int] = None,
+        status: Optional[StatusHospedagem] = None,
+        quarto_id: Optional[int] = None,
+    ) -> List[Hospedagem]:
+        stmt = select(HospedagemORM)
+        if cliente_id is not None:
+            stmt = stmt.where(HospedagemORM.cliente_id == cliente_id)
+        if status is not None:
+            stmt = stmt.where(HospedagemORM.status == status)
+        if quarto_id is not None:
+            stmt = stmt.where(HospedagemORM.quarto_id == quarto_id)
+        resultado = await self.session.execute(stmt)
+        return [orm.to_domain() for orm in resultado.scalars().all()]
 
     async def buscar_ativa_por_quarto(self, quarto_id: int) -> Optional[Hospedagem]:
         """Útil para encontrar quem está no quarto no momento do Check-out."""

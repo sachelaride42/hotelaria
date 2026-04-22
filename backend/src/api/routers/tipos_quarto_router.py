@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from typing import List, Optional
+from decimal import Decimal
 from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.tipo_quarto_repository import TipoQuartoRepository
 from backend.src.infra.repositories.quarto_repository import QuartoRepository
@@ -19,6 +21,28 @@ def get_tipo_repo(session: AsyncSession = Depends(get_db_session)):
 
 def get_quarto_repo(session: AsyncSession = Depends(get_db_session)):
     return QuartoRepository(session)
+
+@router.get("/", response_model=List[TipoQuartoOutput])
+async def listar_tipos_quarto(
+    capacidade_minima: Optional[int] = Query(None, description="Capacidade mínima de hóspedes"),
+    preco_maximo: Optional[Decimal] = Query(None, description="Preço máximo da diária"),
+    repo: TipoQuartoRepository = Depends(get_tipo_repo)
+):
+    """Lista todos os tipos de quarto cadastrados."""
+    return await repo.listar(capacidade_minima=capacidade_minima, preco_maximo=preco_maximo)
+
+
+@router.get("/{tipo_id}", response_model=TipoQuartoOutput)
+async def buscar_tipo_quarto(
+    tipo_id: int,
+    repo: TipoQuartoRepository = Depends(get_tipo_repo)
+):
+    """Retorna um tipo de quarto pelo ID."""
+    tipo = await repo.buscar_por_id(tipo_id)
+    if not tipo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tipo de quarto não encontrado.")
+    return tipo
+
 
 @router.post("/", response_model=TipoQuartoOutput, status_code=status.HTTP_201_CREATED)
 async def criar_tipo_quarto(payload: TipoQuartoBase, repo: TipoQuartoRepository = Depends(get_tipo_repo)):

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional
 
 from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.usuario_repository import UsuarioRepository, EmailDuplicadoError
@@ -15,6 +16,28 @@ router = APIRouter(
 
 def get_usuario_repo(session: AsyncSession = Depends(get_db_session)) -> UsuarioRepository:
     return UsuarioRepository(session)
+
+@router.get("/", response_model=List[UsuarioOutput])
+async def listar_usuarios(
+    nome: Optional[str] = Query(None, description="Busca parcial pelo nome"),
+    tipo: Optional[TipoUsuario] = Query(None, description="Filtrar por tipo (GERENTE ou RECEPCIONISTA)"),
+    repo: UsuarioRepository = Depends(get_usuario_repo)
+):
+    """Lista todos os usuários do sistema."""
+    return await repo.listar(nome=nome, tipo=tipo)
+
+
+@router.get("/{usuario_id}", response_model=UsuarioOutput)
+async def buscar_usuario(
+    usuario_id: int,
+    repo: UsuarioRepository = Depends(get_usuario_repo)
+):
+    """Retorna um usuário pelo ID."""
+    usuario = await repo.buscar_por_id(usuario_id)
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")
+    return usuario
+
 
 @router.post("/", response_model=UsuarioOutput, status_code=status.HTTP_201_CREATED)
 async def criar_usuario(

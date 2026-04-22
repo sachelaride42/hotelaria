@@ -53,6 +53,15 @@ class UsuarioRepository:
             await self.session.delete(orm_obj)
             await self.session.commit()
 
+    async def listar(self, nome: Optional[str] = None, tipo: Optional[str] = None) -> list[Usuario]:
+        stmt = select(UsuarioORM)
+        if nome:
+            stmt = stmt.where(UsuarioORM.nome.ilike(f"%{nome}%"))
+        if tipo:
+            stmt = stmt.where(UsuarioORM.tipo == tipo)
+        resultado = await self.session.execute(stmt)
+        return [orm.to_domain() for orm in resultado.scalars().all()]
+
     async def buscar_por_email(self, email: str) -> Optional[Usuario]:
         """
         Devolve a entidade já instanciada como Gerente ou Recepcionista,
