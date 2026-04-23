@@ -46,10 +46,8 @@ async def criar_usuario(
 ):
     """Cria um novo usuário administrativo (Gerente) ou operacional (Recepcionista)."""
     
-    # 1. O Domínio cuida de gerar o hash com bcrypt
     senha_segura = Usuario.gerar_hash(payload.senha)
-    
-    # 2. Instancia a classe correta com base no payload
+
     if payload.tipo == TipoUsuario.GERENTE:
         novo_usuario = Gerente(nome=payload.nome, email=payload.email, senha_hash=senha_segura)
     elif payload.tipo == TipoUsuario.RECEPCIONISTA:
@@ -57,7 +55,6 @@ async def criar_usuario(
     else:
         raise HTTPException(status_code=400, detail="Tipo de usuário inválido.")
 
-    # 3. Salva no banco (O repositório resolve o Single Table Inheritance)
     try:
         return await repo.salvar(novo_usuario)
     except EmailDuplicadoError as e:

@@ -3,15 +3,9 @@ from sqlalchemy import String, Enum as SQLEnum, ForeignKey
 from backend.src.domain.models.quarto import StatusOcupacao, StatusLimpeza, Quarto
 from backend.src.infra.database import Base
 
-# Base declarativa padrão do SQLAlchemy
-#class Base(DeclarativeBase):
-    #pass
-
 
 class QuartoORM(Base):
-
-    #Mapeamento ORM da tabela de quartos.
-    #Esta classe é usada exclusivamente pela camada de Infraestrutura (Repositórios).
+    """Mapeamento ORM da tabela de quartos."""
 
     __tablename__ = "quartos"
 
@@ -30,16 +24,15 @@ class QuartoORM(Base):
     )
 
     tipo_quarto_id: Mapped[int] = mapped_column(ForeignKey("tipos_quarto.id"), nullable=False)
-    # Optimistic Locking
     versao: Mapped[int] = mapped_column(default=1, nullable=False)
 
-    # Essa configuração diz ao SQLAlchemy para gerenciar a coluna 'versao' automaticamente
+    # Optimistic Locking: o SQLAlchemy gerencia 'versao' automaticamente a cada UPDATE
     __mapper_args__ = {
         "version_id_col": versao
     }
 
     def to_domain(self):
-        #Converte o objeto do banco para a entidade pura do domínio
+        """Converte o registro ORM para a entidade de domínio."""
         return Quarto(
             id=self.id,
             numero=self.numero,

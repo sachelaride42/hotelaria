@@ -4,10 +4,7 @@ import math
 
 
 class CalculadoraDeDiarias:
-    """""
-    Serviço de Domínio puro.
-    Aplica as políticas de cobrança do hotel sem depender de banco de dados.
-    """
+    """Serviço de domínio que aplica as políticas de cobrança de diárias sem acesso ao banco."""
 
     HORARIO_PADRAO_CHECKOUT = 12  # 12:00 PM (Meio-dia)
 
@@ -21,29 +18,26 @@ class CalculadoraDeDiarias:
         if data_checkout <= data_checkin:
             raise ValueError("A data de checkout deve ser posterior ao check-in.")
 
-        # 1. Calcula os dias inteiros baseados na virada de noite
+        # Dias calculados pela virada de data (não pelas horas decorridas)
         dias_estadia = (data_checkout.date() - data_checkin.date()).days
 
-        # Se entrou e saiu no mesmo dia, cobra pelo menos 1 diária (Day Use)
+        # Day Use: entrada e saída no mesmo dia cobram uma diária mínima
         if dias_estadia == 0:
             return valor_diaria
 
         total = Decimal(dias_estadia) * valor_diaria
 
-        # 2. Lógica de Check-out Flexível (Late Checkout)
-        # Se o hóspede saiu no dia correto, mas DEPOIS do horário padrão (12h)
+        # Late checkout: acréscimo proporcional quando a saída ultrapassa o horário padrão
         if data_checkout.hour > CalculadoraDeDiarias.HORARIO_PADRAO_CHECKOUT:
             horas_extras = data_checkout.hour - CalculadoraDeDiarias.HORARIO_PADRAO_CHECKOUT
 
-            # Aplicando a regra mencionada no TCC: "ex: 2 diárias + 1/4 diária até 15h"
-            if horas_extras <= 3:  # Saiu até as 15h
-                acrescimo = valor_diaria * Decimal('0.25')  # 1/4 da diária
-            elif horas_extras <= 6:  # Saiu até as 18h
-                acrescimo = valor_diaria * Decimal('0.50')  # Meia diária
-            else:
-                acrescimo = valor_diaria  # Mais que 18h, cobra diária cheia
+            if horas_extras <= 3:   # até 15h: 1/4 de diária
+                acrescimo = valor_diaria * Decimal('0.25')
+            elif horas_extras <= 6:  # até 18h: meia diária
+                acrescimo = valor_diaria * Decimal('0.50')
+            else:                    # após 18h: diária cheia
+                acrescimo = valor_diaria
 
             total += acrescimo
 
-        # O retorno é arredondado para 2 casas decimais (formato moeda)
         return total.quantize(Decimal('0.00'))

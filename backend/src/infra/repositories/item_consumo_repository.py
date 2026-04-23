@@ -48,17 +48,13 @@ class ItemConsumoRepository:
             await self.session.commit()
 
     async def buscar_por_hospedagem(self, hospedagem_id: int) -> List[ItemConsumo]:
-        """Devolve a lista detalhada para a impressão do Extrato da Conta."""
+        """Retorna todos os itens consumidos na hospedagem especificada."""
         stmt = select(ItemConsumoORM).where(ItemConsumoORM.hospedagem_id == hospedagem_id)
         resultado = await self.session.execute(stmt)
         return [orm.to_domain() for orm in resultado.scalars().all()]
 
     async def somar_total_por_hospedagem(self, hospedagem_id: int) -> Decimal:
-        """
-        O coração financeiro do Check-out!
-        Delega para a base de dados (PostgreSQL) o trabalho de multiplicar a quantidade
-        pelo valor unitário e somar tudo numa única operação ultrarrápida.
-        """
+        """Calcula a soma total dos itens consumidos na hospedagem via agregação SQL."""
         stmt = select(
             func.sum(ItemConsumoORM.quantidade * ItemConsumoORM.valor_unitario)
         ).where(ItemConsumoORM.hospedagem_id == hospedagem_id)
@@ -66,5 +62,4 @@ class ItemConsumoRepository:
         resultado = await self.session.execute(stmt)
         total = resultado.scalar_one_or_none()
 
-        # Se não houver consumos, devolve 0.00
         return Decimal(total) if total else Decimal("0.00")

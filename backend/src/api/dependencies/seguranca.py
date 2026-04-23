@@ -16,14 +16,13 @@ async def get_usuario_logado(
     token: str = Depends(oauth2_scheme),
     repo: UsuarioRepository = Depends(get_usuario_repo)
 ) -> Usuario:
-    
+    """Decodifica o token JWT e retorna o usuário autenticado; lança 401 se inválido."""
     excecao = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Credenciais inválidas ou token expirado.",
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    # Usando o seu método de verificação!
     payload = AuthService.verificar_token(token)
     
     if payload is None:
@@ -40,6 +39,7 @@ async def get_usuario_logado(
     return usuario
 
 async def exigir_gerente(usuario: Usuario = Depends(get_usuario_logado)) -> Usuario:
+    """Verifica se o usuário autenticado possui o papel de Gerente; lança 403 caso contrário."""
     if usuario.tipo != TipoUsuario.GERENTE:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, 

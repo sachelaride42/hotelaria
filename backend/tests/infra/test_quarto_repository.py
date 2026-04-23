@@ -19,13 +19,14 @@ async def tipo_quarto_padrao(db_session):
 
 @pytest.mark.asyncio
 async def test_salvar_novo_quarto(db_session, tipo_quarto_padrao):
+    """Verifica que um quarto novo é persistido com ID gerado e versão inicial 1."""
     repo = QuartoRepository(db_session)
     quarto = Quarto(numero="101", andar=1, tipo_quarto_id=tipo_quarto_padrao.id)
 
     quarto_salvo = await repo.salvar(quarto)
 
     assert quarto_salvo.id is not None
-    assert quarto_salvo.versao == 1  # A versão inicial deve ser sempre 1 no banco
+    assert quarto_salvo.versao == 1
 
 
 
@@ -40,7 +41,7 @@ async def test_atualizar_quarto_incrementa_versao(db_session, tipo_quarto_padrao
     quarto_atualizado = await repo.salvar(quarto)
 
     assert quarto_atualizado.status_ocupacao == StatusOcupacao.OCUPADO
-    assert quarto_atualizado.versao == 2  # O banco subiu para 2 automaticamente!
+    assert quarto_atualizado.versao == 2
 
 
 @pytest.mark.asyncio
@@ -67,16 +68,16 @@ async def test_optimistic_locking_impede_sobrescrita_simultanea(db_session, tipo
             quarto_A.atualizarStatusOcupacao(StatusOcupacao.OCUPADO)
             await repo_A.salvar(quarto_A)
 
-            # Recepcionista B tenta alterar (Ele ainda acha que a versão é 1)
+            # Sessão B ainda opera com versão 1; o repositório deve rejeitar a gravação
             quarto_B.atualizarStatusOcupacao(StatusOcupacao.MANUTENCAO)
 
-            # Boom! O SQLAlchemy intercepta a incompatibilidade de versão.
             with pytest.raises(ConcorrenciaQuartoError, match="modificado por outro usuário"):
                 await repo_B.salvar(quarto_B)
 
 
 @pytest.mark.asyncio
 async def test_listar_todos_retorna_todos_os_quartos(db_session, tipo_quarto_padrao):
+    """Retorna todos os quartos persistidos sem filtros."""
     repo = QuartoRepository(db_session)
     await repo.salvar(Quarto(numero="401", andar=4, tipo_quarto_id=tipo_quarto_padrao.id))
     await repo.salvar(Quarto(numero="402", andar=4, tipo_quarto_id=tipo_quarto_padrao.id))
@@ -90,6 +91,7 @@ async def test_listar_todos_retorna_todos_os_quartos(db_session, tipo_quarto_pad
 
 @pytest.mark.asyncio
 async def test_listar_todos_retorna_lista_vazia_sem_quartos(db_session):
+    """Retorna lista vazia quando nenhum quarto está cadastrado."""
     repo = QuartoRepository(db_session)
 
     todos = await repo.listar_todos()
@@ -120,6 +122,7 @@ async def test_atualizar_dados_basicos_quarto(db_session, tipo_quarto_padrao):
 
 @pytest.mark.asyncio
 async def test_atualizar_dados_basicos_quarto_inexistente_retorna_none(db_session, tipo_quarto_padrao):
+    """Retorna None ao tentar atualizar um quarto com ID inexistente."""
     repo = QuartoRepository(db_session)
     resultado = await repo.atualizar_dados_basicos(9999, "000", 1, tipo_quarto_padrao.id)
     assert resultado is None
@@ -138,5 +141,6 @@ async def test_deletar_quarto(db_session, tipo_quarto_padrao):
 
 @pytest.mark.asyncio
 async def test_deletar_quarto_inexistente_nao_lanca_erro(db_session):
+    """Não lança exceção ao tentar deletar um quarto com ID inexistente."""
     repo = QuartoRepository(db_session)
     await repo.deletar(9999)

@@ -9,7 +9,7 @@ from backend.src.infra.orm_models.quarto_orm import QuartoORM
 
 
 class ConcorrenciaQuartoError(Exception):
-    """Exceção customizada para isolar o erro do SQLAlchemy da nossa API"""
+    """Exceção de conflito de versão no Optimistic Locking do quarto."""
     pass
 
 
@@ -18,7 +18,7 @@ class QuartoRepository:
         self.session = session
 
     async def buscar_por_id(self, quarto_id: int) -> Quarto | None:
-        #Busca um quarto no banco e o converte para a Entidade de Domínio pura
+        """Retorna o quarto pelo ID, ou None se não encontrado."""
         stmt = select(QuartoORM).where(QuartoORM.id == quarto_id)
         resultado = await self.session.execute(stmt)
         quarto_orm = resultado.scalar_one_or_none()
@@ -30,7 +30,6 @@ class QuartoRepository:
 
     async def salvar(self, quarto: Quarto) -> Quarto:
         if quarto.id is None:
-            # INSERT: quarto novo
             quarto_orm = QuartoORM(
                 numero=quarto.numero,
                 andar=quarto.andar,
@@ -47,17 +46,16 @@ class QuartoRepository:
             return quarto
 
         else:
-            # UPDATE com verificação de versão manual (Optimistic Locking real)
             stmt = (
                 update(QuartoORM)
                 .where(
                     QuartoORM.id == quarto.id,
-                    QuartoORM.versao == quarto.versao  # ← coração do Optimistic Locking
+                    QuartoORM.versao == quarto.versao  # Optimistic Locking: rejeita se a versão divergiu
                 )
                 .values(
                     status_ocupacao=quarto.status_ocupacao,
                     status_limpeza=quarto.status_limpeza,
-                    versao=quarto.versao + 1  # ← incrementa a versão
+                    versao=quarto.versao + 1
                 )
             )
 
@@ -92,7 +90,6 @@ class QuartoRepository:
 
     async def contar_por_tipo(self, tipo_quarto_id: int) -> int:
         """Conta quantos quartos físicos existem de um determinado tipo."""
-        # O teste desse metodo esta feito em test_tipo_quarto_repository.py
         stmt = select(func.count(QuartoORM.id)).where(QuartoORM.tipo_quarto_id == tipo_quarto_id)
         resultado = await self.session.execute(stmt)
         return resultado.scalar_one()

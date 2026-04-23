@@ -16,8 +16,7 @@ class StatusLimpeza(str, Enum):
 
 @dataclass
 class Quarto:
-
-    #Entidade de Domínio representando um Quarto do hotel.
+    """Entidade de domínio representando um quarto do hotel."""
 
     numero: str
     andar: int
@@ -28,7 +27,6 @@ class Quarto:
     # Controle de concorrência (Optimistic Locking)
     versao: int = 1
 
-    # O ID é opcional na criação, pois só é gerado após salvar no banco
     id: Optional[int] = None
 
     def atualizarStatusOcupacao(self, novo: StatusOcupacao):
