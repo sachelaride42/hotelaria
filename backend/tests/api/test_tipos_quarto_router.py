@@ -171,11 +171,11 @@ async def test_api_listar_tipos_quarto_sem_token_retorna_401(client: AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_api_listar_tipos_quarto_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str):
-    """Apenas gerentes podem listar tipos de quarto."""
+async def test_api_listar_tipos_quarto_recepcionista_retorna_200(client: AsyncClient, token_recepcionista: str):
+    """Qualquer usuário logado pode listar tipos de quarto."""
     headers = {"Authorization": f"Bearer {token_recepcionista}"}
     response = await client.get("/tipos-quarto/", headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == 200
 
 
 # --- GET /tipos-quarto/{id} ---
