@@ -3,10 +3,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from backend.src.domain.models.usuario import TipoUsuario
 
 class UsuarioBase(BaseModel):
-    """
-    Atributos base compartilhados tanto na entrada (criação) 
-    quanto na saída (leitura) dos dados.
-    """
+    """Campos comuns a todos os schemas de usuário."""
     nome: str = Field(
         ..., 
         min_length=3, 
@@ -29,11 +26,7 @@ class UsuarioAtualizarInput(UsuarioBase):
 
 
 class UsuarioCriarInput(UsuarioBase):
-    """
-    Schema de Entrada (Input).
-    É o ÚNICO momento em que o sistema lida com a senha.
-    Ela entra em texto plano aqui, vai para o Domínio e vira hash antes de encostar no banco.
-    """
+    """Schema de entrada para criação de usuário; recebe a senha em texto plano."""
     senha: str = Field(
         ..., 
         min_length=6, 
@@ -42,11 +35,7 @@ class UsuarioCriarInput(UsuarioBase):
 
 
 class UsuarioOutput(UsuarioBase):
-    """
-    Schema de Saída (Output) - O que o Frontend recebe.
-    Prova de maturidade em segurança: A propriedade 'senha' foi intencionalmente 
-    omitida deste schema. É impossível a API vazar a senha acidentalmente.
-    """
+    """Schema de saída de usuário; omite a senha por segurança."""
     id: int
 
     model_config = ConfigDict(from_attributes=True)

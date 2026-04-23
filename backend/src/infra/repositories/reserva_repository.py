@@ -79,7 +79,7 @@ class ReservaRepository:
             and_(
                 ReservaORM.tipo_quarto_id == tipo_quarto_id,
                 ReservaORM.status == StatusReserva.CONFIRMADA,
-                # A fórmula sagrada da sobreposição de datas:
+                # Sobreposição de datas: entrada < saida_existente AND saida > entrada_existente
                 ReservaORM.data_entrada < saida,
                 ReservaORM.data_saida > entrada
             )

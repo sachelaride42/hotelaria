@@ -5,14 +5,16 @@ from backend.src.domain.models.hospedagem import Hospedagem, StatusHospedagem
 
 
 def test_criar_hospedagem_inicia_ativa():
+    """Verifica que uma hospedagem recém-criada inicia com status ATIVA e valor zero."""
     futuro = datetime.now() + timedelta(days=2)
     hospedagem = Hospedagem(cliente_id=1, quarto_id=1, data_checkout_previsto=futuro)
 
     assert hospedagem.status == StatusHospedagem.ATIVA
-    assert hospedagem.valor_total == Decimal("0.00")  # Conta começa zerada
+    assert hospedagem.valor_total == Decimal("0.00")
 
 
 def test_realizar_checkout_altera_status_e_valor():
+    """Verifica que o check-out altera o status para FINALIZADA e registra a data e valor."""
     hospedagem = Hospedagem(cliente_id=1, quarto_id=1, data_checkout_previsto=datetime.now() + timedelta(days=1))
 
     data_saida = datetime.now() + timedelta(hours=5)
@@ -26,9 +28,9 @@ def test_realizar_checkout_altera_status_e_valor():
 
 
 def test_impedir_checkout_duplicado():
+    """Impede a realização de check-out em hospedagem já finalizada."""
     hospedagem = Hospedagem(cliente_id=1, quarto_id=1, data_checkout_previsto=datetime.now() + timedelta(days=1))
     hospedagem.realizar_checkout(data_saida=datetime.now() + timedelta(hours=1), valor_calculado=Decimal("100.00"))
 
-    # Tentar fazer checkout de novo deve estourar erro
     with pytest.raises(ValueError, match="Não é possível fazer check-out"):
         hospedagem.realizar_checkout(data_saida=datetime.now() + timedelta(hours=2), valor_calculado=Decimal("100.00"))

@@ -24,7 +24,7 @@ def test_instanciacao_polimorfica():
     assert recepcionista.tipo == TipoUsuario.RECEPCIONISTA
 
 def test_criar_e_verificar_token_jwt():
-    """Testa a engrenagem do python-jose para o JWT."""
+    """Verifica a criação e decodificação de um token JWT válido."""
     dados_payload = {"sub": "teste@hotel.com", "role": "GERENTE"}
     
     # Act
@@ -36,9 +36,9 @@ def test_criar_e_verificar_token_jwt():
     assert isinstance(token, str)
     assert payload_decodificado is not None
     assert payload_decodificado["sub"] == "teste@hotel.com"
-    assert "exp" in payload_decodificado # Garante que a data de expiração foi injetada
+    assert "exp" in payload_decodificado
 
 def test_verificar_token_invalido():
-    """Tokens adulterados ou lixo devem ser rejeitados imediatamente."""
+    """Rejeita tokens adulterados ou malformados retornando None."""
     resultado = AuthService.verificar_token("token.totalmente.falso")
     assert resultado is None

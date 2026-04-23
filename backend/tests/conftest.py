@@ -9,14 +9,12 @@ from backend.src.infra.database import get_db_session
 from backend.src.domain.models.usuario import Gerente, Recepcionista, Usuario
 from backend.src.infra.repositories.usuario_repository import UsuarioRepository
 
-# Usamos SQLite em memória para os testes rodarem de forma ultra-rápida e isolada
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./backend/tests/test.db"
 
-
 engine_test = create_async_engine(
-    TEST_DATABASE_URL,  # continua "sqlite+aiosqlite:///./backend/tests/test.db"
+    TEST_DATABASE_URL,
     connect_args={"check_same_thread": False},
-    poolclass=StaticPool,  # ← única mudança
+    poolclass=StaticPool,
     echo=False
 )
 
@@ -25,7 +23,7 @@ TestingSessionLocal = async_sessionmaker(bind=engine_test, class_=AsyncSession, 
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session() -> AsyncSession:
-    """Cria um banco novo e limpo para cada teste executado."""
+    """Cria e destrói o esquema do banco isolado para cada teste."""
     async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
@@ -39,28 +37,23 @@ async def db_session() -> AsyncSession:
 
 @pytest_asyncio.fixture(scope="function")
 async def client(db_session):
-    """
-    Cria um cliente HTTP simulado para testar as rotas.
-    Ele substitui o banco de dados principal pelo banco de testes.
-    """
+    """Cria um cliente HTTP de teste com a dependência de banco substituída pela sessão de teste."""
 
-    # Override da injeção de dependência!
+    # Substitui a dependência de banco pela sessão de teste
     async def override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db_session] = override_get_db
 
-    # Cria o cliente HTTP assíncrono conectado ao app
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
-    # Limpa o override após o teste
     app.dependency_overrides.clear()
 
 
 @pytest_asyncio.fixture
 async def token_gerente(client: AsyncClient, db_session: AsyncSession) -> str:
-    """Cria um Gerente diretamente no banco (bypassando a API) e retorna o JWT de acesso."""
+    """Persiste um Gerente de teste no banco e retorna seu token JWT."""
     repo = UsuarioRepository(db_session)
     gerente = Gerente(
         nome="Gerente Teste",
@@ -74,7 +67,7 @@ async def token_gerente(client: AsyncClient, db_session: AsyncSession) -> str:
 
 @pytest_asyncio.fixture
 async def token_recepcionista(client: AsyncClient, db_session: AsyncSession) -> str:
-    """Cria um Recepcionista diretamente no banco (bypassando a API) e retorna o JWT de acesso."""
+    """Persiste um Recepcionista de teste no banco e retorna seu token JWT."""
     repo = UsuarioRepository(db_session)
     recep = Recepcionista(
         nome="Recep Teste",

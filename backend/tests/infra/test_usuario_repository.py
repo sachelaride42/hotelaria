@@ -4,6 +4,7 @@ from backend.src.infra.repositories.usuario_repository import UsuarioRepository,
 
 @pytest.mark.asyncio
 async def test_salvar_e_buscar_gerente(db_session):
+    """Persiste um Gerente e verifica recuperação com tipo correto."""
     repo = UsuarioRepository(db_session)
     senha_segura = Gerente.gerar_hash("senha123")
     gerente = Gerente(nome="Alice", email="alice@hotel.com", senha_hash=senha_segura)
@@ -14,12 +15,13 @@ async def test_salvar_e_buscar_gerente(db_session):
     
     # Assert: O repositório deve devolver exatamente uma instância de Gerente
     assert buscado is not None
-    assert isinstance(buscado, Gerente) # Prova do Polymorphic Identity!
+    assert isinstance(buscado, Gerente)  # Verifica identidade polimórfica
     assert buscado.tipo == TipoUsuario.GERENTE
     assert buscado.nome == "Alice"
 
 @pytest.mark.asyncio
 async def test_salvar_e_buscar_recepcionista(db_session):
+    """Persiste um Recepcionista e verifica recuperação com tipo correto."""
     repo = UsuarioRepository(db_session)
     senha_segura = Recepcionista.gerar_hash("senha123")
     recepcionista = Recepcionista(nome="Bob", email="bob@hotel.com", senha_hash=senha_segura)
@@ -30,11 +32,12 @@ async def test_salvar_e_buscar_recepcionista(db_session):
     
     # Assert: O repositório deve devolver exatamente uma instância de Recepcionista
     assert buscado is not None
-    assert isinstance(buscado, Recepcionista) # Prova do Polymorphic Identity!
+    assert isinstance(buscado, Recepcionista)  # Verifica identidade polimórfica
     assert buscado.tipo == TipoUsuario.RECEPCIONISTA
 
 @pytest.mark.asyncio
 async def test_impedir_email_duplicado(db_session):
+    """Lança EmailDuplicadoError ao tentar persistir dois usuários com o mesmo e-mail."""
     repo = UsuarioRepository(db_session)
     senha = Gerente.gerar_hash("123")
 

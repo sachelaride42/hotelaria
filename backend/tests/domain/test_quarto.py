@@ -3,7 +3,7 @@ from backend.src.domain.models.quarto import Quarto, StatusOcupacao, StatusLimpe
 
 
 def test_criar_quarto_com_valores_padrao():
-    #Garante que um quarto novo nasce livre, limpo e na versão 1
+    """Verifica que um quarto novo inicia com status LIVRE, LIMPO e versão 1."""
     # Arrange & Act
     quarto = Quarto(numero="101", andar=1, tipo_quarto_id=1)
 
@@ -18,7 +18,7 @@ def test_criar_quarto_com_valores_padrao():
 
 
 def test_atualizar_status_ocupacao_transicao_valida():
-    """Testa a mudança normal de estado de ocupação do quarto"""
+    """Valida a transição de status de ocupação de LIVRE para OCUPADO."""
     # Arrange
     quarto = Quarto(numero="202", andar=2, tipo_quarto_id=2)
     assert quarto.status_ocupacao == StatusOcupacao.LIVRE
@@ -31,7 +31,7 @@ def test_atualizar_status_ocupacao_transicao_valida():
 
 
 def test_atualizar_status_ocupacao_impede_sujo_para_ocupado():
-    #Testa a regra de negócio que impede alocar um hóspede em um quarto sujo.
+    """Impede a ocupação de quarto com status de limpeza SUJO."""
     # Arrange
     quarto = Quarto(numero="303", andar=3, tipo_quarto_id=3, status_limpeza=StatusLimpeza.SUJO)
 
@@ -41,7 +41,7 @@ def test_atualizar_status_ocupacao_impede_sujo_para_ocupado():
 
 
 def test_atualizar_status_ocupacao_impede_manutencao_para_ocupado():
-    # Garante que quartos em manutenção não sejam alocados no check-in
+    """Impede a ocupação de quarto em status MANUTENCAO."""
     # Arrange
     quarto = Quarto(numero="404", andar=4, tipo_quarto_id=1, status_ocupacao=StatusOcupacao.MANUTENCAO)
 
@@ -67,7 +67,7 @@ def test_checkout_auto_marca_quarto_sujo():
 
 
 def test_atualizar_status_limpeza():
-    """Governanta marca o quarto como limpo após a limpeza."""
+    """Valida a transição do status de limpeza de SUJO para LIMPO."""
     # Arrange
     quarto = Quarto(numero="606", andar=6, tipo_quarto_id=1, status_limpeza=StatusLimpeza.SUJO)
 

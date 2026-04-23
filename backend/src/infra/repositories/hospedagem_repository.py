@@ -66,7 +66,7 @@ class HospedagemRepository:
         return [orm.to_domain() for orm in resultado.scalars().all()]
 
     async def buscar_ativa_por_quarto(self, quarto_id: int) -> Optional[Hospedagem]:
-        """Útil para encontrar quem está no quarto no momento do Check-out."""
+        """Retorna a hospedagem ativa de um quarto, ou None se não houver."""
         stmt = select(HospedagemORM).where(
             HospedagemORM.quarto_id == quarto_id,
             HospedagemORM.status == StatusHospedagem.ATIVA

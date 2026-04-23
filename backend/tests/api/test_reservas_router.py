@@ -216,3 +216,122 @@ async def test_api_buscar_reserva_por_id_inexistente_retorna_404(client: AsyncCl
 async def test_api_buscar_reserva_sem_token_retorna_401(client: AsyncClient):
     response = await client.get("/reservas/1")
     assert response.status_code == 401
+
+
+# --- POST /reservas/lista-espera/ ---
+
+@pytest.mark.asyncio
+async def test_api_criar_reserva_lista_espera_sucesso(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Reserva criada em lista de espera deve ter status LISTA_ESPERA, mesmo sem disponibilidade."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/clientes/", json={"nome": "Carlos", "telefone": "789"}, headers=r_headers)
+    await client.post("/tipos-quarto/", json={"nome": "Simples", "precoBaseDiaria": 100, "capacidade": 1}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "300", "andar": 3, "tipo_quarto_id": 1}, headers=g_headers)
+
+    # Ocupa o único quarto disponível
+    payload = {"cliente_id": 1, "tipo_quarto_id": 1, "data_entrada": str(date(2028, 1, 1)), "data_saida": str(date(2028, 1, 5))}
+    await client.post("/reservas/", json=payload, headers=r_headers)
+
+    # Lista de espera deve funcionar mesmo sem vagas
+    response = await client.post("/reservas/lista-espera/", json=payload, headers=r_headers)
+    assert response.status_code == 201
+    assert response.json()["status"] == "LISTA_ESPERA"
+
+
+@pytest.mark.asyncio
+async def test_api_criar_reserva_lista_espera_tipo_inexistente_retorna_404(client: AsyncClient, token_recepcionista: str):
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    payload = {"cliente_id": 1, "tipo_quarto_id": 9999, "data_entrada": str(date(2028, 2, 1)), "data_saida": str(date(2028, 2, 5))}
+    response = await client.post("/reservas/lista-espera/", json=payload, headers=r_headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_criar_reserva_lista_espera_sem_token_retorna_401(client: AsyncClient):
+    payload = {"cliente_id": 1, "tipo_quarto_id": 1, "data_entrada": str(date(2028, 3, 1)), "data_saida": str(date(2028, 3, 5))}
+    response = await client.post("/reservas/lista-espera/", json=payload)
+    assert response.status_code == 401
+
+
+# --- PATCH /reservas/{id}/cancelar ---
+
+@pytest.mark.asyncio
+async def test_api_cancelar_reserva_sucesso(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Reserva CONFIRMADA pode ser cancelada."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/clientes/", json={"nome": "Diana", "telefone": "321"}, headers=r_headers)
+    await client.post("/tipos-quarto/", json={"nome": "Standard", "precoBaseDiaria": 120, "capacidade": 2}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "400", "andar": 4, "tipo_quarto_id": 1}, headers=g_headers)
+
+    payload = {"cliente_id": 1, "tipo_quarto_id": 1, "data_entrada": str(date(2028, 4, 1)), "data_saida": str(date(2028, 4, 5))}
+    resp = await client.post("/reservas/", json=payload, headers=r_headers)
+    reserva_id = resp.json()["id"]
+
+    response = await client.patch(f"/reservas/{reserva_id}/cancelar", headers=r_headers)
+    assert response.status_code == 200
+    assert response.json()["status"] == "CANCELADA"
+
+
+@pytest.mark.asyncio
+async def test_api_cancelar_reserva_nao_encontrada_retorna_404(client: AsyncClient, token_recepcionista: str):
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+    response = await client.patch("/reservas/9999/cancelar", headers=r_headers)
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_cancelar_reserva_sem_token_retorna_401(client: AsyncClient):
+    response = await client.patch("/reservas/1/cancelar")
+    assert response.status_code == 401
+
+
+# --- GET /reservas/disponibilidade/ ---
+
+@pytest.mark.asyncio
+async def test_api_verificar_disponibilidade_com_vaga(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Endpoint retorna disponível quando há quartos livres no período."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/tipos-quarto/", json={"nome": "Disponivel", "precoBaseDiaria": 80, "capacidade": 1}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "500", "andar": 5, "tipo_quarto_id": 1}, headers=g_headers)
+
+    response = await client.get(
+        "/reservas/disponibilidade/?tipo_quarto_id=1&data_entrada=2029-01-01&data_saida=2029-01-05",
+        headers=r_headers
+    )
+    assert response.status_code == 200
+    dados = response.json()
+    assert dados["disponivel"] is True
+    assert dados["quartos_livres"] >= 1
+
+
+@pytest.mark.asyncio
+async def test_api_verificar_disponibilidade_sem_vaga(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Endpoint retorna indisponível quando único quarto já está reservado no período."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/clientes/", json={"nome": "Eva", "telefone": "654"}, headers=r_headers)
+    await client.post("/tipos-quarto/", json={"nome": "Lotado", "precoBaseDiaria": 90, "capacidade": 1}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "600", "andar": 6, "tipo_quarto_id": 1}, headers=g_headers)
+
+    payload = {"cliente_id": 1, "tipo_quarto_id": 1, "data_entrada": str(date(2029, 2, 1)), "data_saida": str(date(2029, 2, 5))}
+    await client.post("/reservas/", json=payload, headers=r_headers)
+
+    response = await client.get(
+        "/reservas/disponibilidade/?tipo_quarto_id=1&data_entrada=2029-02-01&data_saida=2029-02-05",
+        headers=r_headers
+    )
+    assert response.status_code == 200
+    assert response.json()["disponivel"] is False
+
+
+@pytest.mark.asyncio
+async def test_api_verificar_disponibilidade_sem_token_retorna_401(client: AsyncClient):
+    response = await client.get("/reservas/disponibilidade/?tipo_quarto_id=1&data_entrada=2029-03-01&data_saida=2029-03-05")
+    assert response.status_code == 401
