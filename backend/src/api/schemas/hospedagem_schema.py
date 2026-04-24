@@ -10,8 +10,8 @@ class HospedagemCheckinInput(BaseModel):
     quarto_id: int = Field(..., description="ID do Quarto físico escolhido")
     reserva_id: Optional[int] = Field(None, description="ID da Reserva, se existir")
     data_checkout_previsto: datetime = Field(..., description="Quando o hóspede planeia sair")
-    # Para lidar com o Optimistic Locking do Quarto:
     versao_quarto: int = Field(..., description="Versão atual do quarto para evitar concorrência")
+    valor_diaria_negociado: Optional[Decimal] = Field(None, ge=0, description="Preço negociado da diária (sobrescreve o padrão do tipo de quarto)")
 
 class HospedagemOutput(BaseModel):
     id: int
@@ -22,6 +22,7 @@ class HospedagemOutput(BaseModel):
     data_checkout_previsto: datetime
     data_checkout_real: Optional[datetime]
     valor_total: Decimal
+    valor_diaria_negociado: Optional[Decimal]
     status: StatusHospedagem
 
     model_config = ConfigDict(from_attributes=True)

@@ -26,6 +26,7 @@ class Hospedagem:
     data_checkin: datetime = field(default_factory=datetime.now)
     data_checkout_real: Optional[datetime] = None
     valor_total: Decimal = Decimal("0.00")
+    valor_diaria_negociado: Optional[Decimal] = None
 
     status: StatusHospedagem = StatusHospedagem.ATIVA
     id: Optional[int] = None

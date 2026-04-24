@@ -318,3 +318,91 @@ async def test_api_buscar_hospedagem_por_id_inexistente_retorna_404(client: Asyn
 async def test_api_buscar_hospedagem_sem_token_retorna_401(client: AsyncClient):
     response = await client.get("/hospedagens/1")
     assert response.status_code == 401
+
+
+# ─── valor_diaria_negociado (UC5) ────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_api_checkin_com_valor_negociado_persiste_campo(client: AsyncClient, token_recepcionista: str, setup_dados_iniciais):
+    """Check-in com valor_diaria_negociado deve persistir o campo na hospedagem."""
+    dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    resp = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=2)).isoformat(),
+        "versao_quarto": dados["quarto_versao"],
+        "valor_diaria_negociado": 150.00,
+    }, headers=r_headers)
+
+    assert resp.status_code == 201
+    assert float(resp.json()["valor_diaria_negociado"]) == 150.0
+
+
+@pytest.mark.asyncio
+async def test_api_checkout_usa_valor_negociado(client: AsyncClient, token_recepcionista: str, setup_dados_iniciais):
+    """Checkout deve calcular valor_total usando o preço negociado, não o preço base do tipo."""
+    dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    # Check-in com preço negociado R$150 (tipo base é R$100)
+    resp_checkin = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=2)).isoformat(),
+        "versao_quarto": dados["quarto_versao"],
+        "valor_diaria_negociado": 150.00,
+    }, headers=r_headers)
+    hospedagem_id = resp_checkin.json()["id"]
+
+    versao = (await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)).json()["versao"]
+
+    await client.post("/pagamentos/", json={
+        "hospedagem_id": hospedagem_id,
+        "valor_pago": 1000.00,
+        "forma_pagamento": "PIX",
+    }, headers=r_headers)
+
+    resp_checkout = await client.post(
+        f"/hospedagens/{hospedagem_id}/checkout",
+        json={"versao_quarto": versao},
+        headers=r_headers,
+    )
+    assert resp_checkout.status_code == 200
+    # valor_total deve ser >= R$150 (preço negociado), não R$100 (preço base do tipo)
+    assert float(resp_checkout.json()["valor_total"]) >= 150.0
+
+
+@pytest.mark.asyncio
+async def test_api_checkout_sem_negociado_usa_preco_base(client: AsyncClient, token_recepcionista: str, setup_dados_iniciais):
+    """Sem valor_diaria_negociado, checkout usa o preço base do tipo de quarto (regressão)."""
+    dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    # Check-in SEM valor_diaria_negociado
+    resp_checkin = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=2)).isoformat(),
+        "versao_quarto": dados["quarto_versao"],
+    }, headers=r_headers)
+    hospedagem_id = resp_checkin.json()["id"]
+    assert resp_checkin.json()["valor_diaria_negociado"] is None
+
+    versao = (await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)).json()["versao"]
+
+    await client.post("/pagamentos/", json={
+        "hospedagem_id": hospedagem_id,
+        "valor_pago": 1000.00,
+        "forma_pagamento": "PIX",
+    }, headers=r_headers)
+
+    resp_checkout = await client.post(
+        f"/hospedagens/{hospedagem_id}/checkout",
+        json={"versao_quarto": versao},
+        headers=r_headers,
+    )
+    assert resp_checkout.status_code == 200
+    # valor_total deve usar R$100 (preço base) — checkout day use = 1 diária = R$100
+    assert float(resp_checkout.json()["valor_total"]) >= 100.0

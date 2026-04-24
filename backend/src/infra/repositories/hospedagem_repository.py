@@ -20,6 +20,7 @@ class HospedagemRepository:
                 data_checkout_previsto=hospedagem.data_checkout_previsto,
                 data_checkout_real=hospedagem.data_checkout_real,
                 valor_total=hospedagem.valor_total,
+                valor_diaria_negociado=hospedagem.valor_diaria_negociado,
                 status=hospedagem.status
             )
             self.session.add(hosp_orm)

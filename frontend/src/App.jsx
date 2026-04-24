@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Reservas from './pages/Reservas'
+import Checkin from './pages/Checkin'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/reservas" element={<Reservas />} />
+          <Route path="/checkin" element={<Checkin />} />
         </Route>
       </Routes>
     </BrowserRouter>

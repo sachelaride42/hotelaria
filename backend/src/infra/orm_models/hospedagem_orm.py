@@ -26,6 +26,7 @@ class HospedagemORM(Base):
 
     # Valores e Estado
     valor_total: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0.00"), nullable=False)
+    valor_diaria_negociado: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 2), nullable=True)
     status: Mapped[StatusHospedagem] = mapped_column(SQLEnum(StatusHospedagem), default=StatusHospedagem.ATIVA,
                                                      nullable=False)
 
@@ -39,5 +40,6 @@ class HospedagemORM(Base):
             data_checkout_previsto=self.data_checkout_previsto,
             data_checkout_real=self.data_checkout_real,
             valor_total=self.valor_total,
+            valor_diaria_negociado=self.valor_diaria_negociado,
             status=self.status
         )
