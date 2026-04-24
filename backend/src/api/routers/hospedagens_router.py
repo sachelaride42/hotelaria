@@ -105,7 +105,8 @@ async def realizar_checkin(
             cliente_id=payload.cliente_id,
             quarto_id=payload.quarto_id,
             reserva_id=payload.reserva_id,
-            data_checkout_previsto=payload.data_checkout_previsto
+            data_checkout_previsto=payload.data_checkout_previsto,
+            valor_diaria_negociado=payload.valor_diaria_negociado,
         )
     except ValueError as erro_dominio:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(erro_dominio))
@@ -163,10 +164,11 @@ async def realizar_checkout(
     # 4. A MATEMÁTICA: Diárias + Consumo
     data_saida_real = datetime.now()
 
+    valor_diaria_efetivo = hospedagem.valor_diaria_negociado or tipo_quarto.precoBaseDiaria
     valor_diarias = CalculadoraDeDiarias.calcular_total(
         data_checkin=hospedagem.data_checkin,
         data_checkout=data_saida_real,
-        valor_diaria=tipo_quarto.precoBaseDiaria
+        valor_diaria=valor_diaria_efetivo,
     )
 
     # Busca a soma de tudo que ele pegou no frigobar/restaurante

@@ -89,6 +89,24 @@ async def test_deletar_hospedagem(db_session, setup_dependencias_hospedagem):
 
 
 @pytest.mark.asyncio
+async def test_salvar_e_buscar_valor_diaria_negociado(db_session, setup_dependencias_hospedagem):
+    """valor_diaria_negociado deve ser persistido e recuperado do banco."""
+    repo = HospedagemRepository(db_session)
+    dados = setup_dependencias_hospedagem
+
+    hospedagem = Hospedagem(
+        cliente_id=dados["cliente_id"],
+        quarto_id=dados["quarto_id"],
+        data_checkout_previsto=datetime.now() + timedelta(days=2),
+        valor_diaria_negociado=Decimal("150.00"),
+    )
+    salva = await repo.salvar(hospedagem)
+    buscada = await repo.buscar_por_id(salva.id)
+
+    assert buscada.valor_diaria_negociado == Decimal("150.00")
+
+
+@pytest.mark.asyncio
 async def test_deletar_hospedagem_inexistente_nao_lanca_erro(db_session):
     repo = HospedagemRepository(db_session)
     await repo.deletar(9999)

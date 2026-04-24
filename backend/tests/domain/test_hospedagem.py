@@ -27,6 +27,19 @@ def test_realizar_checkout_altera_status_e_valor():
     assert hospedagem.valor_total == valor_cobrado
 
 
+def test_criar_hospedagem_com_valor_negociado():
+    """Hospedagem criada com preço negociado armazena o campo corretamente."""
+    futuro = datetime.now() + timedelta(days=2)
+    hospedagem = Hospedagem(
+        cliente_id=1,
+        quarto_id=1,
+        data_checkout_previsto=futuro,
+        valor_diaria_negociado=Decimal("150.00"),
+    )
+
+    assert hospedagem.valor_diaria_negociado == Decimal("150.00")
+
+
 def test_impedir_checkout_duplicado():
     """Impede a realização de check-out em hospedagem já finalizada."""
     hospedagem = Hospedagem(cliente_id=1, quarto_id=1, data_checkout_previsto=datetime.now() + timedelta(days=1))
