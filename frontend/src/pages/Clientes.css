@@ -1,0 +1,262 @@
+.clientes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ── Busca ── */
+.clientes-busca__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0 0 8px;
+}
+
+.clientes-busca__row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.clientes-busca__input {
+  max-width: 360px;
+  flex: 1;
+}
+
+/* ── Feedback ── */
+.clientes-feedback {
+  font-size: 14px;
+  color: var(--text);
+  padding: 16px 0;
+  margin: 0;
+}
+
+.clientes-feedback--erro {
+  color: #dc2626;
+}
+
+/* ── Tabela ── */
+.clientes-tabela-wrap {
+  overflow-x: auto;
+}
+
+.clientes-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.clientes-tabela th,
+.clientes-tabela td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.clientes-tabela th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--code-bg);
+}
+
+.clientes-tabela tbody tr:hover {
+  background: var(--accent-bg);
+}
+
+.clientes-tabela__acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* ── Botões de ação inline ── */
+.btn-acao {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-acao:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+}
+
+.btn-acao--perigo {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.btn-acao--perigo:hover {
+  background: #fee2e2;
+  border-color: #dc2626;
+}
+
+/* ── Formulário ── */
+.clientes-form-section {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+.clientes-form-section__titulo {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0 0 20px;
+}
+
+.clientes-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.clientes-form__acoes {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* ── Status badge (histórico) ── */
+.status-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.status-badge--ativa      { background: #dcfce7; color: #15803d; }
+.status-badge--finalizada { background: #e0e7ff; color: #3730a3; }
+.status-badge--cancelada  { background: #fee2e2; color: #b91c1c; }
+
+/* ── Modal overlay ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal--pequeno {
+  max-width: 420px;
+}
+
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal__titulo {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+}
+
+.modal__fechar {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.modal__fechar:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.modal .clientes-tabela-wrap,
+.modal .clientes-tabela {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal .clientes-feedback {
+  padding: 24px;
+}
+
+.modal__corpo {
+  padding: 20px 24px;
+  font-size: 15px;
+  color: var(--text);
+  margin: 0;
+}
+
+.modal__footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ── Botão perigo ── */
+.btn--perigo {
+  background: #dc2626;
+  color: #fff;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn--perigo:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.btn--perigo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .clientes-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clientes-busca__input {
+    max-width: 100%;
+  }
+}

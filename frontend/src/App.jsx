@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Reservas from './pages/Reservas'
 import Checkin from './pages/Checkin'
+import Clientes from './pages/Clientes'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/reservas" element={<Reservas />} />
           <Route path="/checkin" element={<Checkin />} />
+          <Route path="/clientes" element={<Clientes />} />
         </Route>
       </Routes>
     </BrowserRouter>

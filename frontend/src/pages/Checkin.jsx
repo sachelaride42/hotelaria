@@ -105,10 +105,17 @@ function BuscaCliente({ onSelecionar }) {
 }
 
 /* ── FormNovoCliente ── */
-function FormNovoCliente({ onCriado, onCancelar }) {
-  const [form, setForm] = useState({ nome: '', telefone: '', cpf: '', email: '' })
+function FormNovoCliente({ onCriado, onCancelar, clienteInicial }) {
+  const [form, setForm] = useState({
+    nome: clienteInicial?.nome ?? '',
+    telefone: clienteInicial?.telefone ?? '',
+    cpf: clienteInicial?.cpf ? maskCPF(clienteInicial.cpf) : '',
+    email: clienteInicial?.email ?? '',
+  })
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
+
+  const editando = Boolean(clienteInicial?.id)
 
   function handleTelefone(e) {
     const v = e.target.value
@@ -124,7 +131,9 @@ function FormNovoCliente({ onCriado, onCancelar }) {
       const payload = { nome: form.nome.trim(), telefone: telRaw }
       if (form.cpf.trim()) payload.cpf = stripMask(form.cpf)
       if (form.email.trim()) payload.email = form.email.trim()
-      const cliente = await apiFetch('/clientes/', { method: 'POST', body: JSON.stringify(payload) })
+      const cliente = editando
+        ? await apiFetch(`/clientes/${clienteInicial.id}`, { method: 'PUT', body: JSON.stringify(payload) })
+        : await apiFetch('/clientes/', { method: 'POST', body: JSON.stringify(payload) })
       onCriado(cliente)
     } catch (err) {
       setErro(err.message)
@@ -170,7 +179,7 @@ function FormNovoCliente({ onCriado, onCancelar }) {
         <button type="button" className="btn btn--ghost" onClick={onCancelar}>Cancelar</button>
         <button type="submit" className="btn btn--primary"
           disabled={salvando || !form.nome || !form.telefone}>
-          {salvando ? 'Salvando…' : 'Salvar hóspede'}
+          {salvando ? 'Salvando…' : editando ? 'Salvar alterações' : 'Salvar hóspede'}
         </button>
       </div>
     </form>
@@ -201,6 +210,7 @@ export default function Checkin() {
   const [reservaSelecionada, setReservaSelecionada] = useState(null)
   const [clienteEtapa2, setClienteEtapa2] = useState(null)
   const [modoCliente, setModoCliente] = useState('search') // 'selecionado' | 'search' | 'novo'
+  const [modoEditarCliente, setModoEditarCliente] = useState(false)
   const [tipoSelecionado, setTipoSelecionado] = useState(null)
   const [quartos, setQuartos] = useState([])
   const [quartoSelecionado, setQuartoSelecionado] = useState(null)
@@ -286,6 +296,7 @@ export default function Checkin() {
     setReservaSelecionada(reserva)
     setClienteEtapa2(cliente)
     setModoCliente('selecionado')
+    setModoEditarCliente(false)
     setTipoSelecionado(tipo ?? null)
     setDataCheckout(reserva.data_saida)
     setErroConfirm('')
@@ -297,6 +308,7 @@ export default function Checkin() {
     setReservaSelecionada(null)
     setClienteEtapa2(null)
     setModoCliente('search')
+    setModoEditarCliente(false)
     setTipoSelecionado(null)
     setDataCheckout('')
     setErroConfirm('')
@@ -375,6 +387,7 @@ export default function Checkin() {
     setReservaSelecionada(null)
     setClienteEtapa2(null)
     setModoCliente('search')
+    setModoEditarCliente(false)
     setTipoSelecionado(null)
     setQuartos([])
     setQuartoSelecionado(null)
@@ -451,23 +464,38 @@ export default function Checkin() {
 
             {modoCliente === 'selecionado' && clienteEtapa2 && (
               <>
-                <div className="form-field">
-                  <label className="form-label">Nome</label>
-                  <input className="form-input" value={clienteEtapa2.nome} readOnly />
-                </div>
-                <div className="form-field">
-                  <label className="form-label">CPF</label>
-                  <input className="form-input"
-                    value={clienteEtapa2.cpf ? maskCPF(clienteEtapa2.cpf) : '—'} readOnly />
-                </div>
-                <div className="form-field">
-                  <label className="form-label">E-mail</label>
-                  <input className="form-input" value={clienteEtapa2.email ?? '—'} readOnly />
-                </div>
-                {modoWalkin && (
-                  <button className="btn-link" onClick={() => { setClienteEtapa2(null); setModoCliente('search') }}>
-                    Trocar hóspede
-                  </button>
+                {!modoEditarCliente ? (
+                  <>
+                    <div className="form-field">
+                      <label className="form-label">Nome</label>
+                      <input className="form-input" value={clienteEtapa2.nome} readOnly />
+                    </div>
+                    <div className="form-field">
+                      <label className="form-label">CPF</label>
+                      <input className="form-input"
+                        value={clienteEtapa2.cpf ? maskCPF(clienteEtapa2.cpf) : '—'} readOnly />
+                    </div>
+                    <div className="form-field">
+                      <label className="form-label">E-mail</label>
+                      <input className="form-input" value={clienteEtapa2.email ?? '—'} readOnly />
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button className="btn btn--ghost" onClick={() => setModoEditarCliente(true)}>
+                        Editar Dados
+                      </button>
+                      {modoWalkin && (
+                        <button className="btn-link" onClick={() => { setClienteEtapa2(null); setModoCliente('search') }}>
+                          Trocar hóspede
+                        </button>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <FormNovoCliente
+                    clienteInicial={clienteEtapa2}
+                    onCriado={c => { setClienteEtapa2(c); setModoEditarCliente(false) }}
+                    onCancelar={() => setModoEditarCliente(false)}
+                  />
                 )}
               </>
             )}

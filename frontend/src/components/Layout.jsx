@@ -1,5 +1,4 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { getUserRole } from '../services/api'
 import './Layout.css'
 
 const menuOperacional = [
@@ -42,7 +41,6 @@ function SidebarSection({ label, links }) {
 
 function Layout() {
   const navigate = useNavigate()
-  const isGerente = getUserRole() === 'GERENTE'
 
   function handleSair() {
     localStorage.removeItem('token')
@@ -64,7 +62,7 @@ function Layout() {
           <p className="sidebar-title">Menu</p>
           <SidebarSection label="Operacional" links={menuOperacional} />
           <SidebarSection label="Serviços" links={menuServicos} />
-          {isGerente && <SidebarSection label="Cadastro" links={menuCadastro} />}
+          <SidebarSection label="Cadastro" links={menuCadastro} />
         </aside>
 
         <main className="main-content">
