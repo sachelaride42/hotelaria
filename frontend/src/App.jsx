@@ -9,6 +9,7 @@ import HospedagemDetalhe from './pages/HospedagemDetalhe'
 import QuartoDetalhe from './pages/QuartoDetalhe'
 import Extrato from './pages/Extrato'
 import Checkout from './pages/Checkout'
+import GradeOcupados from './pages/GradeOcupados'
 
 function App() {
   return (
@@ -20,6 +21,9 @@ function App() {
           <Route path="/reservas" element={<Reservas />} />
           <Route path="/checkin" element={<Checkin />} />
           <Route path="/clientes" element={<Clientes />} />
+          <Route path="/hospedagens" element={<GradeOcupados titulo="Hospedagens Ativas" destino="hospedagem" />} />
+          <Route path="/lancamentos" element={<GradeOcupados titulo="Lançar Produtos / Serviços" destino="extrato" />} />
+          <Route path="/checkout" element={<GradeOcupados titulo="Checkout / Caixa" destino="checkout" />} />
           <Route path="/hospedagem/:hospedagemId" element={<HospedagemDetalhe />} />
           <Route path="/hospedagem/:hospedagemId/extrato" element={<Extrato />} />
           <Route path="/checkout/:hospedagemId" element={<Checkout />} />

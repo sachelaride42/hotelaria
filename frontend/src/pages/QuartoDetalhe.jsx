@@ -67,8 +67,6 @@ export default function QuartoDetalhe() {
     )
   }
 
-  const emManutencao = quarto.status_ocupacao === 'MANUTENCAO'
-
   return (
     <div className="quarto-detalhe">
       <button className="btn-voltar" onClick={() => navigate(-1)}>← Voltar</button>
@@ -109,21 +107,6 @@ export default function QuartoDetalhe() {
         </dl>
       </section>
 
-      <div className="quarto-actions">
-        <button
-          className="btn-checkin"
-          disabled={emManutencao}
-          title={emManutencao ? 'Quarto em manutenção' : undefined}
-          onClick={() => navigate('/checkin', { state: { quartoId: quarto.id } })}
-        >
-          Realizar Check-in
-        </button>
-        {emManutencao && (
-          <p className="aviso-manutencao" role="note">
-            Quarto indisponível para check-in — em manutenção.
-          </p>
-        )}
-      </div>
     </div>
   )
 }
