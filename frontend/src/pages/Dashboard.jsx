@@ -6,17 +6,28 @@ import './Dashboard.css'
 const OCUPACAO_LABEL = { LIVRE: 'Livre', OCUPADO: 'Ocupado', MANUTENCAO: 'Manutenção' }
 const LIMPEZA_LABEL = { LIMPO: 'Limpo', SUJO: 'Sujo' }
 
-function RoomCard({ quarto, tipoNome }) {
+function RoomCard({ quarto, tipoNome, onClick, navigating }) {
   const statusClass = `room-card--${quarto.status_ocupacao.toLowerCase()}`
   const limpezaClass = `room-card__limpeza--${quarto.status_limpeza.toLowerCase()}`
 
   return (
-    <article className={`room-card ${statusClass}`} aria-label={`Quarto ${quarto.numero}`}>
+    <button
+      className={`room-card ${statusClass}${navigating ? ' room-card--loading' : ''}`}
+      aria-label={`Quarto ${quarto.numero} – ${OCUPACAO_LABEL[quarto.status_ocupacao]}. Clique para ver detalhes`}
+      onClick={onClick}
+      disabled={navigating}
+    >
       <div className="room-card__header">
         <span className="room-card__number">{quarto.numero}</span>
-        <span className={`room-card__status-badge`}>
-          {OCUPACAO_LABEL[quarto.status_ocupacao]}
-        </span>
+        <div className="room-card__header-right">
+          <span className="room-card__status-badge">
+            {OCUPACAO_LABEL[quarto.status_ocupacao]}
+          </span>
+          {navigating
+            ? <span className="room-card__spinner" aria-hidden="true" />
+            : <span className="room-card__arrow" aria-hidden="true">›</span>
+          }
+        </div>
       </div>
       <dl className="room-card__info">
         <div>
@@ -32,7 +43,7 @@ function RoomCard({ quarto, tipoNome }) {
           <dd className={limpezaClass}>{LIMPEZA_LABEL[quarto.status_limpeza]}</dd>
         </div>
       </dl>
-    </article>
+    </button>
   )
 }
 
@@ -64,7 +75,27 @@ function Dashboard() {
   const [filtro, setFiltro] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [navigatingId, setNavigatingId] = useState(null)
   const navigate = useNavigate()
+
+  async function handleCardClick(quarto) {
+    if (navigatingId) return
+    setNavigatingId(quarto.id)
+    try {
+      if (quarto.status_ocupacao === 'OCUPADO') {
+        const hospedagens = await apiFetch(`/hospedagens/?quarto_id=${quarto.id}&status=ATIVA`)
+        if (hospedagens.length > 0) {
+          navigate(`/hospedagem/${hospedagens[0].id}`)
+        } else {
+          navigate(`/quarto/${quarto.id}`)
+        }
+      } else {
+        navigate(`/quarto/${quarto.id}`)
+      }
+    } catch {
+      setNavigatingId(null)
+    }
+  }
 
   useEffect(() => {
     Promise.all([
@@ -153,6 +184,8 @@ function Dashboard() {
               key={quarto.id}
               quarto={quarto}
               tipoNome={tipos[quarto.tipo_quarto_id] ?? `Tipo ${quarto.tipo_quarto_id}`}
+              onClick={() => handleCardClick(quarto)}
+              navigating={navigatingId === quarto.id}
             />
           ))}
         </div>

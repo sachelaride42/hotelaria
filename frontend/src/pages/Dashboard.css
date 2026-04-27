@@ -122,13 +122,27 @@
   border-radius: 12px;
   padding: 16px;
   background: var(--bg);
-  transition: box-shadow 0.2s, border-color 0.2s;
-  cursor: default;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
 }
 
-.room-card:hover {
+.room-card:hover:not(:disabled) {
   box-shadow: var(--shadow);
   border-color: var(--accent-border);
+  transform: translateY(-2px);
+}
+
+.room-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.room-card--loading {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 /* Status-specific left accent border */
@@ -141,6 +155,35 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.room-card__header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-card__arrow {
+  font-size: 16px;
+  color: var(--text);
+  opacity: 0.35;
+  transition: opacity 0.15s, transform 0.15s;
+  line-height: 1;
+}
+
+.room-card:hover:not(:disabled) .room-card__arrow {
+  opacity: 0.8;
+  transform: translateX(2px);
+}
+
+.room-card__spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
 }
 
 .room-card__number {

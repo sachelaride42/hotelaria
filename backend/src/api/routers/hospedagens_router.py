@@ -162,7 +162,7 @@ async def realizar_checkout(
     tipo_quarto = await tipo_quarto_repo.buscar_por_id(quarto.tipo_quarto_id)
 
     # 4. A MATEMÁTICA: Diárias + Consumo
-    data_saida_real = datetime.now()
+    data_saida_real = payload.data_checkout_real or datetime.now()
 
     valor_diaria_efetivo = hospedagem.valor_diaria_negociado or tipo_quarto.precoBaseDiaria
     valor_diarias = CalculadoraDeDiarias.calcular_total(

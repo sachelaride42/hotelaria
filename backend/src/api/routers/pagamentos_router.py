@@ -64,8 +64,7 @@ async def listar_pagamentos(
     return await repo.listar_por_hospedagem(hospedagem_id)
 
 
-@router.delete("/{pagamento_id}", status_code=status.HTTP_204_NO_CONTENT,
-               dependencies=[Depends(exigir_gerente)])
+@router.delete("/{pagamento_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def deletar_pagamento(
         pagamento_id: int,
         session: AsyncSession = Depends(get_db_session),

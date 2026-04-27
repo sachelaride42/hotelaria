@@ -1,0 +1,227 @@
+.hospedagem-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Back button ── */
+.btn-voltar {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.btn-voltar:hover {
+  text-decoration: underline;
+}
+
+/* ── Page title ── */
+.hospedagem-detalhe h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* ── Detail cards layout ── */
+.detalhe-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.detalhe-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.detalhe-card h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0 0 16px;
+  letter-spacing: 0;
+}
+
+/* ── Info list ── */
+.info-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.info-row dt {
+  font-size: 13px;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.info-row dd {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-h);
+  margin: 0;
+  text-align: right;
+}
+
+.text-muted {
+  color: var(--text);
+  font-weight: 400;
+}
+
+/* ── Status badges ── */
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.badge--ativa      { background: #dcfce7; color: #15803d; }
+.badge--finalizada { background: #e0e7ff; color: #3730a3; }
+.badge--cancelada  { background: #fee2e2; color: #b91c1c; }
+
+/* ── Section nav ── */
+.hospedagem-nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 20px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: border-color 0.15s, color 0.15s;
+  margin-bottom: -1px;
+}
+
+.nav-link:hover:not(:disabled) {
+  border-bottom-color: var(--accent);
+}
+
+.nav-link--disabled {
+  color: var(--text);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.nav-link--disabled:hover {
+  border-bottom-color: transparent;
+}
+
+/* ── Checkout area ── */
+.checkout-area {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-checkout {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-checkout:hover {
+  opacity: 0.88;
+}
+
+/* ── Feedback states ── */
+.page-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.page-feedback--error {
+  color: #dc2626;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .detalhe-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .hospedagem-nav {
+    gap: 0;
+  }
+
+  .nav-link {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .hospedagem-detalhe h1 {
+    font-size: 22px;
+  }
+
+  .detalhe-card {
+    padding: 16px;
+  }
+}

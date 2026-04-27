@@ -94,8 +94,7 @@ async def atualizar_consumo(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT,
-               dependencies=[Depends(exigir_gerente)])
+@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def deletar_consumo(
         item_id: int,
         session: AsyncSession = Depends(get_db_session),

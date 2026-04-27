@@ -29,4 +29,5 @@ class HospedagemOutput(BaseModel):
 
 class HospedagemCheckoutInput(BaseModel):
     """Payload para realizar o Check-out."""
-    versao_quarto: int = Field(..., description="Versão atual do quarto para evitar concorrência ao marcá-mo como SUJO")
+    versao_quarto: int = Field(..., description="Versão atual do quarto para evitar concorrência ao marcá-lo como SUJO")
+    data_checkout_real: Optional[datetime] = Field(None, description="Horário real de saída (UC4a). Se omitido, usa datetime.now().")
