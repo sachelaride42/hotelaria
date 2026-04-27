@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from typing import List
 
 from backend.src.infra.database import get_db_session
@@ -68,4 +69,10 @@ async def deletar_item_catalogo(
     item = await repo.buscar_por_id(item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item do catálogo não encontrado.")
-    await repo.deletar(item_id)
+    try:
+        await repo.deletar(item_id)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é possível excluir este item pois ele está vinculado a lançamentos existentes."
+        )

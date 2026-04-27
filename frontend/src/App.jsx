@@ -10,6 +10,10 @@ import QuartoDetalhe from './pages/QuartoDetalhe'
 import Extrato from './pages/Extrato'
 import Checkout from './pages/Checkout'
 import GradeOcupados from './pages/GradeOcupados'
+import Governanca from './pages/Governanca'
+import QuartosAdmin from './pages/QuartosAdmin'
+import Produtos from './pages/Produtos'
+import Perfil from './pages/Perfil'
 
 function App() {
   return (
@@ -28,6 +32,10 @@ function App() {
           <Route path="/hospedagem/:hospedagemId/extrato" element={<Extrato />} />
           <Route path="/checkout/:hospedagemId" element={<Checkout />} />
           <Route path="/quarto/:quartoId" element={<QuartoDetalhe />} />
+          <Route path="/governanca" element={<Governanca />} />
+          <Route path="/quartos-admin" element={<QuartosAdmin />} />
+          <Route path="/produtos" element={<Produtos />} />
+          <Route path="/perfil" element={<Perfil />} />
         </Route>
       </Routes>
     </BrowserRouter>

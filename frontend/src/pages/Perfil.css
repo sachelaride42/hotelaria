@@ -1,0 +1,122 @@
+.perfil-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.perfil-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-h);
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+/* ── Feedback ── */
+.perfil-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.perfil-feedback--error { color: #dc2626; }
+.perfil-error-detail { font-size: 13px; opacity: 0.75; margin: 0; }
+
+/* ── Card ── */
+.perfil-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  padding: 28px 32px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+  max-width: 520px;
+}
+
+/* ── Avatar ── */
+.perfil-avatar {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  border: 2px solid var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  user-select: none;
+}
+
+/* ── Fields ── */
+.perfil-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  flex: 1;
+}
+
+.perfil-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.perfil-campo__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+
+.perfil-campo__valor {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-h);
+  margin: 0;
+}
+
+/* ── Tipo badge ── */
+.perfil-tipo {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 10px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.perfil-tipo--gerente       { background: var(--accent-bg); color: var(--accent); }
+.perfil-tipo--recepcionista { background: #e0e7ff; color: #3730a3; }
+
+/* ── Spinner ── */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .perfil-card {
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 20px;
+    text-align: center;
+  }
+}

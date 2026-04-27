@@ -7,6 +7,9 @@ from backend.src.infra.database import get_db_session
 from backend.src.infra.repositories.usuario_repository import UsuarioRepository
 from backend.src.domain.services.auth_service import AuthService
 from backend.src.api.schemas.token import TokenOutput
+from backend.src.api.schemas.usuario_schema import UsuarioOutput
+from backend.src.api.dependencies.seguranca import get_usuario_logado
+from backend.src.domain.models.usuario import Usuario
 
 # O prefix "/auth" é definido no main.py ao registrar este router
 router = APIRouter(tags=["Autenticação"])
@@ -35,3 +38,9 @@ async def login(
     }
     access_token = AuthService.criar_token(token_payload)
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/me", response_model=UsuarioOutput)
+async def perfil_atual(usuario: Usuario = Depends(get_usuario_logado)):
+    """Retorna os dados do usuário autenticado."""
+    return usuario

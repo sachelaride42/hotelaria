@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 
 from backend.src.infra.database import get_db_session
@@ -157,4 +158,10 @@ async def deletar_quarto(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Não é possível remover um quarto que está ocupado."
         )
-    await repo.deletar(quarto_id)
+    try:
+        await repo.deletar(quarto_id)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é possível excluir este quarto pois existem registros de hospedagem associados a ele."
+        )

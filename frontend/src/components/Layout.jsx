@@ -52,8 +52,8 @@ function Layout() {
     <div className="layout">
       <header className="topbar">
         <nav className="topbar-nav" aria-label="Navegação principal">
-          <button className="topbar-btn topbar-btn--active">HOTEL</button>
-          <button className="topbar-btn">Perfil</button>
+          <button className="topbar-btn topbar-btn--active" onClick={() => navigate('/')}>HOTEL</button>
+          <button className="topbar-btn" onClick={() => navigate('/perfil')}>Perfil</button>
           <button className="topbar-btn" onClick={handleSair}>Sair</button>
         </nav>
       </header>
