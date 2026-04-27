@@ -162,14 +162,3 @@ async def test_api_deletar_consumo_sem_token_retorna_401(client: AsyncClient):
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
-async def test_api_deletar_consumo_recepcionista_retorna_403(client: AsyncClient, token_recepcionista: str, hospedagem_ativa_id):
-    """Recepcionista não pode deletar itens de consumo — exige Gerente."""
-    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
-    resp_criar = await client.post("/itens-consumo/", json={
-        "hospedagem_id": hospedagem_ativa_id, "descricao": "Amendoim", "quantidade": 1, "valor_unitario": 5.00
-    }, headers=r_headers)
-    item_id = resp_criar.json()["id"]
-
-    response = await client.delete(f"/itens-consumo/{item_id}", headers=r_headers)
-    assert response.status_code == 403

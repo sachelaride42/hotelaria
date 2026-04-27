@@ -218,3 +218,4 @@ async def deletar_hospedagem(
             detail="Não é possível remover uma hospedagem ativa. Realize o checkout primeiro."
         )
     await repo.deletar(hospedagem_id)
+

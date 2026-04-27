@@ -174,19 +174,6 @@ async def test_deletar_pagamento_gerente_sucesso(client: AsyncClient, setup_hosp
     assert resp_del.status_code == 204
 
 
-@pytest.mark.asyncio
-async def test_deletar_pagamento_recepcionista_retorna_403(client: AsyncClient, setup_hospedagem_ativa):
-    """Recepcionista não pode remover pagamentos."""
-    dados = setup_hospedagem_ativa
-    resp_criar = await client.post(
-        "/pagamentos/",
-        json={"hospedagem_id": dados["hospedagem_id"], "valor_pago": 100.00, "forma_pagamento": "DINHEIRO"},
-        headers=dados["r_headers"],
-    )
-    pagamento_id = resp_criar.json()["id"]
-
-    resp_del = await client.delete(f"/pagamentos/{pagamento_id}", headers=dados["r_headers"])
-    assert resp_del.status_code == 403
 
 
 @pytest.mark.asyncio

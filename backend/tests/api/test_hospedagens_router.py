@@ -406,3 +406,50 @@ async def test_api_checkout_sem_negociado_usa_preco_base(client: AsyncClient, to
     assert resp_checkout.status_code == 200
     # valor_total deve usar R$100 (preço base) — checkout day use = 1 diária = R$100
     assert float(resp_checkout.json()["valor_total"]) >= 100.0
+
+
+@pytest.mark.asyncio
+async def test_api_checkout_com_data_real_fornecida_usa_data_do_payload(client: AsyncClient, token_recepcionista: str,
+                                                                        setup_dados_iniciais):
+    dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    # 1. Faz o Check-in
+    resp_checkin = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=2)).isoformat(),
+        "versao_quarto": dados["quarto_versao"]
+    }, headers=r_headers)
+    hospedagem_id = resp_checkin.json()["id"]
+
+    versao = (await client.get(f"/quartos/{dados['quarto_id']}", headers=r_headers)).json()["versao"]
+
+    await client.post("/pagamentos/", json={
+        "hospedagem_id": hospedagem_id,
+        "valor_pago": 2000.00,
+        "forma_pagamento": "PIX"
+    }, headers=r_headers)
+
+    data_checkout_customizada = (datetime.now() + timedelta(days=4)).replace(microsecond=0)
+
+    payload_checkout = {
+        "versao_quarto": versao,
+        "data_checkout_real": data_checkout_customizada.isoformat()
+    }
+
+    resp_checkout = await client.post(
+        f"/hospedagens/{hospedagem_id}/checkout",
+        json=payload_checkout,
+        headers=r_headers,
+    )
+
+    assert resp_checkout.status_code == 200
+    dados_retornados = resp_checkout.json()
+
+    assert dados_retornados["status"] == "FINALIZADA"
+
+    data_retornada = datetime.fromisoformat(dados_retornados["data_checkout_real"]).replace(tzinfo=None)
+    assert data_retornada == data_checkout_customizada
+
+    assert float(dados_retornados["valor_total"]) >= 400.0
