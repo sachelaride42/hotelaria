@@ -88,9 +88,15 @@ async def atualizar_usuario(
 @router.delete("/{usuario_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def deletar_usuario(
     usuario_id: int,
+    usuario_logado: Usuario = Depends(exigir_gerente),
     repo: UsuarioRepository = Depends(get_usuario_repo)
 ):
     """Remove um usuário do sistema."""
+    if usuario_logado.id == usuario_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não pode excluir o seu próprio usuário."
+        )
     usuario = await repo.buscar_por_id(usuario_id)
     if not usuario:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")

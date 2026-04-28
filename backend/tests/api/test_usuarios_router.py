@@ -141,6 +141,19 @@ async def test_api_deletar_usuario_recepcionista_retorna_403(client: AsyncClient
     assert response.status_code == 403
 
 
+@pytest.mark.asyncio
+async def test_api_impedir_gerente_deletar_proprio_usuario(client: AsyncClient, token_gerente: str):
+    """Gerente não pode excluir a si mesmo."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    resp = await client.get("/usuarios/?tipo=GERENTE", headers=headers)
+    proprio_id = resp.json()[0]["id"]
+
+    response = await client.delete(f"/usuarios/{proprio_id}", headers=headers)
+
+    assert response.status_code == 403
+    assert "próprio usuário" in response.json()["detail"]
+
+
 # --- GET /usuarios/ ---
 
 @pytest.mark.asyncio

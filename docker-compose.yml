@@ -1,10 +1,16 @@
 services:
   db:
-    image: postgres
+    image: postgres:16
     container_name: hotel-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: hotelaria
     ports:
-      - "5432:5432"
+      - "5000:5432"
+    volumes:
+      - hotel-db-data:/var/lib/postgresql/data
+
+volumes:
+  hotel-db-data:

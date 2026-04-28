@@ -13,6 +13,8 @@ import GradeOcupados from './pages/GradeOcupados'
 import Governanca from './pages/Governanca'
 import QuartosAdmin from './pages/QuartosAdmin'
 import Produtos from './pages/Produtos'
+import TiposQuartoAdmin from './pages/TiposQuartoAdmin'
+import UsuariosAdmin from './pages/UsuariosAdmin'
 import Perfil from './pages/Perfil'
 
 function App() {
@@ -34,7 +36,9 @@ function App() {
           <Route path="/quarto/:quartoId" element={<QuartoDetalhe />} />
           <Route path="/governanca" element={<Governanca />} />
           <Route path="/quartos-admin" element={<QuartosAdmin />} />
+          <Route path="/tipos-quarto-admin" element={<TiposQuartoAdmin />} />
           <Route path="/produtos" element={<Produtos />} />
+          <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
           <Route path="/perfil" element={<Perfil />} />
         </Route>
       </Routes>

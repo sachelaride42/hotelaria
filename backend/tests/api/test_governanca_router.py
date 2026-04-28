@@ -94,8 +94,8 @@ async def test_solicitar_limpeza_versao_errada_retorna_409(client: AsyncClient, 
 
 
 @pytest.mark.asyncio
-async def test_solicitar_limpeza_quarto_ocupado_retorna_400(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_quarto: dict):
-    """Solicitar limpeza de quarto OCUPADO → 400."""
+async def test_solicitar_limpeza_quarto_ocupado_permitido(client: AsyncClient, token_gerente: str, token_recepcionista: str, setup_quarto: dict):
+    """Solicitar limpeza de quarto OCUPADO é permitido — ex.: quarto que acabou de ter checkout."""
     g_headers = {"Authorization": f"Bearer {token_gerente}"}
     r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
     quarto = setup_quarto
@@ -108,8 +108,8 @@ async def test_solicitar_limpeza_quarto_ocupado_retorna_400(client: AsyncClient,
 
     resp = await client.patch(f"/governanca/limpeza/{quarto['id']}/solicitar",
                                json={"versao": nova_versao}, headers=g_headers)
-    assert resp.status_code == 400
-    assert "está ocupado" in resp.json()["detail"]
+    assert resp.status_code == 200
+    assert resp.json()["status_limpeza"] == StatusLimpeza.SUJO.value
 
 
 @pytest.mark.asyncio

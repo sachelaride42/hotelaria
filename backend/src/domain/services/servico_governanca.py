@@ -1,4 +1,4 @@
-from backend.src.domain.models.quarto import Quarto, StatusLimpeza, StatusOcupacao
+from backend.src.domain.models.quarto import Quarto, StatusLimpeza
 
 
 class ServicoGovernanca:
@@ -13,12 +13,7 @@ class ServicoGovernanca:
 
     @staticmethod
     def validar_solicitacao_limpeza(quarto: Quarto) -> None:
-        """
-        Regra: não se pode solicitar limpeza de quarto OCUPADO
-        nem de quarto que já está marcado como SUJO.
-        """
-        if quarto.status_ocupacao == StatusOcupacao.OCUPADO:
-            raise ValueError(f"O quarto {quarto.numero} está ocupado e não pode ser colocado para limpeza.")
+        """Regra: não se pode solicitar limpeza de quarto que já está marcado como SUJO."""
         if quarto.status_limpeza == StatusLimpeza.SUJO:
             raise ValueError(f"O quarto {quarto.numero} já está marcado para limpeza.")
 

@@ -25,12 +25,12 @@ def test_filtrar_quartos_para_limpeza_lista_vazia_quando_todos_limpos():
     assert resultado == []
 
 
-def test_validar_solicitacao_limpeza_quarto_ocupado_levanta_erro():
-    """Impede solicitação de limpeza em quarto ocupado."""
-    quarto = Quarto(numero="201", andar=2, tipo_quarto_id=1, status_ocupacao=StatusOcupacao.OCUPADO)
+def test_validar_solicitacao_limpeza_quarto_ocupado_nao_levanta_erro():
+    """Permite solicitar limpeza de quarto OCUPADO (ex.: após checkout)."""
+    quarto = Quarto(numero="201", andar=2, tipo_quarto_id=1,
+                    status_ocupacao=StatusOcupacao.OCUPADO, status_limpeza=StatusLimpeza.LIMPO)
 
-    with pytest.raises(ValueError, match="está ocupado"):
-        ServicoGovernanca.validar_solicitacao_limpeza(quarto)
+    ServicoGovernanca.validar_solicitacao_limpeza(quarto)
 
 
 def test_validar_solicitacao_limpeza_quarto_ja_sujo_levanta_erro():

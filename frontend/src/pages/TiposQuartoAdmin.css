@@ -1,0 +1,123 @@
+.tq-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.tq-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-h);
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.tq-restrito {
+  font-size: 14px;
+  color: #dc2626;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 0;
+}
+
+.tq-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.tq-feedback--error { color: #dc2626; }
+.tq-error-detail { font-size: 13px; opacity: 0.75; margin: 0; }
+
+.tq-busca__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.tq-busca__row { display: flex; gap: 8px; }
+
+.tq-busca__input { max-width: 360px; flex: 1; }
+
+.tq-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tq-table th {
+  background: var(--code-bg, #f5f4f6);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.tq-table td {
+  padding: 10px 14px;
+  color: var(--text-h);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.tq-table tbody tr:last-child td { border-bottom: none; }
+.tq-table tbody tr:hover:not(.row-editing) { background: var(--accent-bg); }
+
+.tq-acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tq-form-section {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+.tq-form-titulo {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0 0 20px;
+}
+
+.tq-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 560px;
+  margin-bottom: 16px;
+}
+
+.tq-form-field--full { grid-column: 1 / -1; }
+
+.tq-form-acoes {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.tq-opcional {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .tq-title { font-size: 22px; }
+  .tq-form-grid { grid-template-columns: 1fr; max-width: 100%; }
+  .tq-busca__input { max-width: 100%; }
+}

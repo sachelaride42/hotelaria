@@ -17,7 +17,9 @@ const menuServicos = [
 const menuCadastro = [
   { to: '/clientes', label: 'Clientes' },
   { to: '/quartos-admin', label: 'Quartos' },
+  { to: '/tipos-quarto-admin', label: 'Tipos de Quarto' },
   { to: '/produtos', label: 'Produtos / Serviços' },
+  { to: '/usuarios-admin', label: 'Usuários' },
 ]
 
 function SidebarSection({ label, links }) {
