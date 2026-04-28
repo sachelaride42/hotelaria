@@ -229,6 +229,26 @@ async def atualizar_reserva(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
+    if reserva.status == StatusReserva.CONFIRMADA:
+        quarto_repo = QuartoRepository(session)
+        total_quartos = await quarto_repo.contar_por_tipo(reserva.tipo_quarto_id)
+        conflitos = await repo.contar_reservas_conflitantes(
+            reserva.tipo_quarto_id, payload.data_entrada, payload.data_saida,
+            excluir_reserva_id=reserva_id,
+        )
+        disponivel = ServicoDisponibilidade.verificar_disponibilidade_tipo(
+            tipo_quarto_id=reserva.tipo_quarto_id,
+            data_entrada=payload.data_entrada,
+            data_saida=payload.data_saida,
+            total_quartos_fisicos_deste_tipo=total_quartos,
+            reservas_conflitantes=conflitos,
+        )
+        if not disponivel:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Não há disponibilidade para as novas datas solicitadas."
+            )
+
     reserva.data_entrada = payload.data_entrada
     reserva.data_saida = payload.data_saida
     reserva.valor_total_previsto = novo_valor

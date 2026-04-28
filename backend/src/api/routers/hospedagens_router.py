@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession, session
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Optional
 
 from backend.src.domain.services.calculadora_diarias import CalculadoraDeDiarias
@@ -95,6 +95,12 @@ async def realizar_checkin(
         if reserva_existente.status != StatusReserva.CONFIRMADA:
             raise HTTPException(status_code=400,
                                 detail="Esta reserva não está Confirmada e não pode ser usada para check-in.")
+
+        if reserva_existente.data_entrada != date.today():
+            raise HTTPException(
+                status_code=400,
+                detail="O check-in só pode ser realizado na data de entrada da reserva."
+            )
 
         # Muda o status no domínio
         reserva_existente.status = StatusReserva.UTILIZADA

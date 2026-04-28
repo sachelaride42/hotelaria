@@ -16,6 +16,7 @@ const menuServicos = [
 
 const menuCadastro = [
   { to: '/clientes', label: 'Clientes' },
+  { to: '/reservas-admin', label: 'Reservas' },
   { to: '/quartos-admin', label: 'Quartos' },
   { to: '/tipos-quarto-admin', label: 'Tipos de Quarto' },
   { to: '/produtos', label: 'Produtos / Serviços' },
@@ -65,7 +66,7 @@ function Layout() {
           <p className="sidebar-title">Menu</p>
           <SidebarSection label="Operacional" links={menuOperacional} />
           <SidebarSection label="Serviços" links={menuServicos} />
-          <SidebarSection label="Cadastro" links={menuCadastro} />
+          <SidebarSection label="Gestão e Cadastro" links={menuCadastro} />
         </aside>
 
         <main className="main-content">

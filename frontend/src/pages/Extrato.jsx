@@ -23,13 +23,14 @@ function calcDiarias(hospedagem, tipo) {
 }
 
 function ItemRow({ it, ativo, onSaved, onDeleted }) {
-  const [editing, setEditing]     = useState(false)
-  const [descricao, setDescricao] = useState(it.descricao)
-  const [quantidade, setQtd]      = useState(String(it.quantidade))
-  const [valorUnit, setValor]     = useState(String(it.valor_unitario))
-  const [salvando, setSalvando]   = useState(false)
-  const [excluindo, setExcluindo] = useState(false)
-  const [erro, setErro]           = useState(null)
+  const [editing, setEditing]               = useState(false)
+  const [descricao, setDescricao]           = useState(it.descricao)
+  const [quantidade, setQtd]                = useState(String(it.quantidade))
+  const [valorUnit, setValor]               = useState(String(it.valor_unitario))
+  const [salvando, setSalvando]             = useState(false)
+  const [excluindo, setExcluindo]           = useState(false)
+  const [confirmandoExcluir, setConfirmando] = useState(false)
+  const [erro, setErro]                     = useState(null)
 
   function cancelEdit() {
     setDescricao(it.descricao)
@@ -64,7 +65,6 @@ function ItemRow({ it, ativo, onSaved, onDeleted }) {
   }
 
   async function handleDelete() {
-    if (!window.confirm(`Remover "${it.descricao}" da conta?`)) return
     setExcluindo(true)
     try {
       await apiFetch(`/itens-consumo/${it.id}`, { method: 'DELETE' })
@@ -72,6 +72,7 @@ function ItemRow({ it, ativo, onSaved, onDeleted }) {
     } catch (err) {
       setErro(err.message ?? 'Erro ao excluir.')
       setExcluindo(false)
+      setConfirmando(false)
     }
   }
 
@@ -119,22 +120,22 @@ function ItemRow({ it, ativo, onSaved, onDeleted }) {
             {previewOk ? formatBRL(previewQtd * previewVal) : '—'}
           </td>
           <td className="col-acoes">
-            <button
-              className="btn-acao btn-acao--confirm"
-              onClick={handleSave}
-              disabled={salvando}
-              title="Salvar"
-            >
-              {salvando ? '…' : '✓'}
-            </button>
-            <button
-              className="btn-acao btn-acao--cancel"
-              onClick={cancelEdit}
-              disabled={salvando}
-              title="Cancelar"
-            >
-              ✕
-            </button>
+            <div className="extrato-acoes">
+              <button
+                className="btn-acao"
+                onClick={handleSave}
+                disabled={salvando}
+              >
+                {salvando ? 'Salvando…' : 'Salvar'}
+              </button>
+              <button
+                className="btn-acao btn-acao--aviso"
+                onClick={cancelEdit}
+                disabled={salvando}
+              >
+                Cancelar
+              </button>
+            </div>
           </td>
         </tr>
         {erro && (
@@ -157,23 +158,44 @@ function ItemRow({ it, ativo, onSaved, onDeleted }) {
         <td className="col-num">{formatBRL(it.quantidade * it.valor_unitario)}</td>
         <td className="col-acoes">
           {ativo && (
-            <>
-              <button
-                className="btn-acao btn-acao--edit"
-                onClick={() => setEditing(true)}
-                title="Editar item"
-              >
-                ✏
-              </button>
-              <button
-                className="btn-acao btn-acao--delete"
-                onClick={handleDelete}
-                disabled={excluindo}
-                title="Excluir item"
-              >
-                {excluindo ? '…' : '🗑'}
-              </button>
-            </>
+            <div className="extrato-acoes">
+              {confirmandoExcluir ? (
+                <>
+                  <span style={{ fontSize: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                    Excluir item?
+                  </span>
+                  <button
+                    className="btn-acao btn-acao--perigo"
+                    onClick={handleDelete}
+                    disabled={excluindo}
+                  >
+                    {excluindo ? 'Excluindo…' : 'Confirmar'}
+                  </button>
+                  <button
+                    className="btn-acao"
+                    onClick={() => setConfirmando(false)}
+                    disabled={excluindo}
+                  >
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="btn-acao"
+                    onClick={() => setEditing(true)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    className="btn-acao btn-acao--perigo"
+                    onClick={() => setConfirmando(true)}
+                  >
+                    Excluir
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </td>
       </tr>
@@ -347,10 +369,10 @@ export default function Extrato() {
                 <th>Nome</th>
                 <th>Data</th>
                 <th>Descrição</th>
-                <th className="col-num">Qtd</th>
-                <th className="col-num">Valor unit.</th>
-                <th className="col-num">Total</th>
-                <th className="col-acoes">Ações</th>
+                <th>Qtd</th>
+                <th>Valor unit.</th>
+                <th>Total</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>

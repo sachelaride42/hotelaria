@@ -96,6 +96,82 @@ async def test_api_atualizar_reserva_sem_token_retorna_401(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_api_atualizar_reserva_conflito_retorna_409(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Atualizar reserva CONFIRMADA para período ocupado por outra reserva deve retornar 409."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/clientes/", json={"nome": "Ana", "telefone": "1"}, headers=r_headers)
+    await client.post("/tipos-quarto/", json={"nome": "Single", "precoBaseDiaria": 100, "capacidade": 1}, headers=g_headers)
+    # Apenas 1 quarto físico — garante que dois conflitos = sem vaga
+    await client.post("/quartos/", json={"numero": "101", "andar": 1, "tipo_quarto_id": 1}, headers=g_headers)
+
+    # Reserva A: março 1–10
+    await client.post("/reservas/", json={"cliente_id": 1, "tipo_quarto_id": 1,
+                                          "data_entrada": "2028-03-01", "data_saida": "2028-03-10"}, headers=r_headers)
+    # Reserva B: março 15–25 (sem overlap com A)
+    resp_b = await client.post("/reservas/", json={"cliente_id": 1, "tipo_quarto_id": 1,
+                                                   "data_entrada": "2028-03-15", "data_saida": "2028-03-25"}, headers=r_headers)
+    assert resp_b.status_code == 201
+    reserva_b_id = resp_b.json()["id"]
+
+    # Tenta mover B para março 5–20 — conflita com A
+    resp = await client.put(f"/reservas/{reserva_b_id}",
+                            json={"data_entrada": "2028-03-05", "data_saida": "2028-03-20"},
+                            headers=r_headers)
+    assert resp.status_code == 409
+    assert "disponibilidade" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_reserva_mesmas_datas_nao_conflita_consigo(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Atualizar com as mesmas datas não deve conflitar com a própria reserva (auto-exclusão)."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/clientes/", json={"nome": "Bob", "telefone": "2"}, headers=r_headers)
+    await client.post("/tipos-quarto/", json={"nome": "Single", "precoBaseDiaria": 100, "capacidade": 1}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "102", "andar": 1, "tipo_quarto_id": 1}, headers=g_headers)
+
+    resp = await client.post("/reservas/", json={"cliente_id": 1, "tipo_quarto_id": 1,
+                                                 "data_entrada": "2028-04-01", "data_saida": "2028-04-10"}, headers=r_headers)
+    reserva_id = resp.json()["id"]
+
+    # Atualizar com as mesmas datas — deve funcionar mesmo com 0 vagas livres sem a auto-exclusão
+    resp_update = await client.put(f"/reservas/{reserva_id}",
+                                   json={"data_entrada": "2028-04-01", "data_saida": "2028-04-10"},
+                                   headers=r_headers)
+    assert resp_update.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_api_atualizar_reserva_lista_espera_ignora_conflito(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Reserva LISTA_ESPERA pode ter datas alteradas sem verificação de disponibilidade."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    await client.post("/clientes/", json={"nome": "Carol", "telefone": "3"}, headers=r_headers)
+    await client.post("/tipos-quarto/", json={"nome": "Single", "precoBaseDiaria": 100, "capacidade": 1}, headers=g_headers)
+    await client.post("/quartos/", json={"numero": "103", "andar": 1, "tipo_quarto_id": 1}, headers=g_headers)
+
+    # Reserva que ocupa o único quarto
+    await client.post("/reservas/", json={"cliente_id": 1, "tipo_quarto_id": 1,
+                                          "data_entrada": "2028-05-01", "data_saida": "2028-05-10"}, headers=r_headers)
+
+    # Cria reserva em lista de espera (mesmo período — sem vaga)
+    resp_espera = await client.post("/reservas/lista-espera/", json={"cliente_id": 1, "tipo_quarto_id": 1,
+                                                                      "data_entrada": "2028-05-03", "data_saida": "2028-05-08"}, headers=r_headers)
+    reserva_espera_id = resp_espera.json()["id"]
+
+    # Atualiza datas da lista de espera — não deve verificar conflito
+    resp_update = await client.put(f"/reservas/{reserva_espera_id}",
+                                   json={"data_entrada": "2028-05-02", "data_saida": "2028-05-09"},
+                                   headers=r_headers)
+    assert resp_update.status_code == 200
+    assert resp_update.json()["status"] == "LISTA_ESPERA"
+
+
+@pytest.mark.asyncio
 async def test_api_deletar_reserva_sucesso(client: AsyncClient, token_gerente: str, token_recepcionista: str):
     """Gerente deleta uma reserva CONFIRMADA com sucesso."""
     g_headers = {"Authorization": f"Bearer {token_gerente}"}

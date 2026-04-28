@@ -12,6 +12,7 @@ import Checkout from './pages/Checkout'
 import GradeOcupados from './pages/GradeOcupados'
 import Governanca from './pages/Governanca'
 import QuartosAdmin from './pages/QuartosAdmin'
+import ReservasAdmin from './pages/ReservasAdmin'
 import Produtos from './pages/Produtos'
 import TiposQuartoAdmin from './pages/TiposQuartoAdmin'
 import UsuariosAdmin from './pages/UsuariosAdmin'
@@ -35,6 +36,7 @@ function App() {
           <Route path="/checkout/:hospedagemId" element={<Checkout />} />
           <Route path="/quarto/:quartoId" element={<QuartoDetalhe />} />
           <Route path="/governanca" element={<Governanca />} />
+          <Route path="/reservas-admin" element={<ReservasAdmin />} />
           <Route path="/quartos-admin" element={<QuartosAdmin />} />
           <Route path="/tipos-quarto-admin" element={<TiposQuartoAdmin />} />
           <Route path="/produtos" element={<Produtos />} />

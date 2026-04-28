@@ -16,6 +16,7 @@ function Governanca() {
   const [atualizandoLimpezaId, setAtualizandoLimpezaId]   = useState(null)
   const [limparTodosLoading, setLimparTodosLoading] = useState(false)
   const [modalAberto, setModalAberto]           = useState(false)
+  const [confirmandoLimpeza, setConfirmandoLimpeza] = useState(null)
   const [erroAcao, setErroAcao]                 = useState(null)
   const navigate = useNavigate()
 
@@ -248,7 +249,7 @@ function Governanca() {
                               className="gov-select"
                               value={quarto.status_limpeza}
                               disabled={atualizandoLimpezaId !== null || limparTodosLoading}
-                              onChange={e => atualizarLimpeza(quarto, e.target.value)}
+                              onChange={e => setConfirmandoLimpeza({ quarto, novoStatus: e.target.value })}
                               aria-label={`Alterar status de limpeza do quarto ${quarto.numero}`}
                             >
                               <option value="LIMPO">Limpo</option>
@@ -300,6 +301,47 @@ function Governanca() {
                 Cancelar
               </button>
               <button className="btn btn--primary" onClick={limparTodos}>
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmandoLimpeza && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirmar alteração de limpeza"
+          onClick={e => { if (e.target === e.currentTarget) setConfirmandoLimpeza(null) }}
+        >
+          <div className="modal modal--pequeno">
+            <div className="modal__header">
+              <h2 className="modal__titulo">Alterar status de limpeza</h2>
+              <button
+                className="modal__fechar"
+                onClick={() => setConfirmandoLimpeza(null)}
+                aria-label="Fechar"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="modal__corpo">
+              Confirma marcar o quarto <strong>{confirmandoLimpeza.quarto.numero}</strong> como{' '}
+              <strong>{LIMPEZA_LABEL[confirmandoLimpeza.novoStatus]}</strong>?
+            </p>
+            <div className="modal__footer">
+              <button className="btn btn--ghost" onClick={() => setConfirmandoLimpeza(null)}>
+                Cancelar
+              </button>
+              <button
+                className="btn btn--primary"
+                onClick={() => {
+                  atualizarLimpeza(confirmandoLimpeza.quarto, confirmandoLimpeza.novoStatus)
+                  setConfirmandoLimpeza(null)
+                }}
+              >
                 Confirmar
               </button>
             </div>

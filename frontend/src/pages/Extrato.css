@@ -98,13 +98,17 @@
 }
 
 .extrato-table .col-num {
-  text-align: right;
   white-space: nowrap;
 }
 
 .extrato-table .col-acoes {
-  text-align: right;
   white-space: nowrap;
+}
+
+.extrato-acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .table-empty {
@@ -118,43 +122,42 @@
   background: none;
   border: 1px solid var(--border);
   border-radius: 5px;
-  padding: 3px 7px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  color: var(--text);
-  line-height: 1.4;
-}
-
-.btn-acao + .btn-acao {
-  margin-left: 4px;
-}
-
-.btn-acao--edit:hover {
-  border-color: var(--accent);
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 13px;
   color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-acao:hover {
   background: var(--accent-bg);
+  border-color: var(--accent-border);
 }
 
-.btn-acao--delete:hover {
-  border-color: #dc2626;
+.btn-acao:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-acao--perigo {
   color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.btn-acao--perigo:hover {
   background: #fee2e2;
-}
-
-.btn-acao--confirm {
-  border-color: #16a34a;
-  color: #16a34a;
-}
-
-.btn-acao--confirm:hover {
-  background: #dcfce7;
-}
-
-.btn-acao--cancel:hover {
   border-color: #dc2626;
-  color: #dc2626;
-  background: #fee2e2;
+}
+
+.btn-acao--aviso {
+  color: #b45309;
+  border-color: #fcd34d;
+}
+
+.btn-acao--aviso:hover {
+  background: #fef3c7;
+  border-color: #b45309;
 }
 
 /* ── Inline edit row ── */

@@ -73,16 +73,22 @@ class ReservaRepository:
             await self.session.delete(orm_obj)
             await self.session.commit()
 
-    async def contar_reservas_conflitantes(self, tipo_quarto_id: int, entrada: date, saida: date) -> int:
+    async def contar_reservas_conflitantes(
+        self,
+        tipo_quarto_id: int,
+        entrada: date,
+        saida: date,
+        excluir_reserva_id: Optional[int] = None,
+    ) -> int:
         """Busca no banco quantas reservas já existem nesse período para esse tipo de quarto."""
-        stmt = nselect(func.count(ReservaORM.id)).where(
-            and_(
-                ReservaORM.tipo_quarto_id == tipo_quarto_id,
-                ReservaORM.status == StatusReserva.CONFIRMADA,
-                # Sobreposição de datas: entrada < saida_existente AND saida > entrada_existente
-                ReservaORM.data_entrada < saida,
-                ReservaORM.data_saida > entrada
-            )
-        )
+        conditions = [
+            ReservaORM.tipo_quarto_id == tipo_quarto_id,
+            ReservaORM.status == StatusReserva.CONFIRMADA,
+            ReservaORM.data_entrada < saida,
+            ReservaORM.data_saida > entrada,
+        ]
+        if excluir_reserva_id is not None:
+            conditions.append(ReservaORM.id != excluir_reserva_id)
+        stmt = nselect(func.count(ReservaORM.id)).where(and_(*conditions))
         resultado = await self.session.execute(stmt)
         return resultado.scalar_one()

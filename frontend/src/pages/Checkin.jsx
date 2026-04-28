@@ -355,6 +355,10 @@ export default function Checkin() {
 
   async function handleFinalizar() {
     if (!clienteEtapa2 || !quartoSelecionado || !dataCheckout) return
+    if (reservaSelecionada && reservaSelecionada.data_entrada !== hoje) {
+      setErroConfirm('O check-in só pode ser realizado na data de entrada da reserva.')
+      return
+    }
     setErroConfirm('')
     setConfirmando(true)
     try {

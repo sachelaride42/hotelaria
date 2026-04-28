@@ -1,7 +1,7 @@
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from backend.src.domain.models.quarto import StatusOcupacao, StatusLimpeza
 
 
@@ -24,6 +24,32 @@ async def setup_dados_iniciais(client: AsyncClient, token_gerente: str, token_re
         "cliente_id": cliente_resp.json()["id"],
         "quarto_id": quarto_resp.json()["id"],
         "quarto_versao": quarto_resp.json()["versao"]
+    }
+
+
+@pytest_asyncio.fixture
+async def setup_dados_com_reserva_hoje(client: AsyncClient, token_gerente: str, token_recepcionista: str):
+    """Cria dados básicos e uma reserva com data_entrada = hoje, para testar a validação de check-in."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    cliente_resp = await client.post("/clientes/", json={"nome": "Hóspede Hoje", "telefone": "999"}, headers=r_headers)
+    tipo_resp = await client.post("/tipos-quarto/", json={"nome": "Standard", "precoBaseDiaria": 100.00, "capacidade": 1}, headers=g_headers)
+    quarto_resp = await client.post("/quartos/",
+                                    json={"numero": "201", "andar": 2, "tipo_quarto_id": tipo_resp.json()["id"]},
+                                    headers=g_headers)
+    reserva_resp = await client.post("/reservas/", json={
+        "cliente_id": cliente_resp.json()["id"],
+        "tipo_quarto_id": tipo_resp.json()["id"],
+        "data_entrada": str(date.today()),
+        "data_saida": str(date.today() + timedelta(days=3)),
+    }, headers=r_headers)
+
+    return {
+        "cliente_id": cliente_resp.json()["id"],
+        "quarto_id": quarto_resp.json()["id"],
+        "quarto_versao": quarto_resp.json()["versao"],
+        "reserva_id": reserva_resp.json()["id"],
     }
 
 
@@ -406,6 +432,118 @@ async def test_api_checkout_sem_negociado_usa_preco_base(client: AsyncClient, to
     assert resp_checkout.status_code == 200
     # valor_total deve usar R$100 (preço base) — checkout day use = 1 diária = R$100
     assert float(resp_checkout.json()["valor_total"]) >= 100.0
+
+
+# ─── Check-in com reserva: validação de data_entrada == hoje ─────────────────
+
+@pytest.mark.asyncio
+async def test_api_checkin_com_reserva_na_data_correta_sucesso(
+    client: AsyncClient, token_recepcionista: str, setup_dados_com_reserva_hoje
+):
+    """Check-in com reserva CONFIRMADA cuja data_entrada é hoje deve ser aceito (201)."""
+    dados = setup_dados_com_reserva_hoje
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    resp = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "versao_quarto": dados["quarto_versao"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=3)).isoformat(),
+        "reserva_id": dados["reserva_id"],
+    }, headers=r_headers)
+
+    assert resp.status_code == 201
+    assert resp.json()["reserva_id"] == dados["reserva_id"]
+
+
+@pytest.mark.asyncio
+async def test_api_checkin_com_reserva_data_futura_retorna_400(
+    client: AsyncClient, token_gerente: str, token_recepcionista: str
+):
+    """Check-in com reserva cuja data_entrada é no futuro deve ser bloqueado (400)."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    cliente_resp = await client.post("/clientes/", json={"nome": "Hóspede Futuro", "telefone": "111"}, headers=r_headers)
+    tipo_resp = await client.post("/tipos-quarto/", json={"nome": "Luxo", "precoBaseDiaria": 200.00, "capacidade": 2}, headers=g_headers)
+    quarto_resp = await client.post("/quartos/",
+                                    json={"numero": "301", "andar": 3, "tipo_quarto_id": tipo_resp.json()["id"]},
+                                    headers=g_headers)
+
+    data_futura = date.today() + timedelta(days=1)
+    reserva_resp = await client.post("/reservas/", json={
+        "cliente_id": cliente_resp.json()["id"],
+        "tipo_quarto_id": tipo_resp.json()["id"],
+        "data_entrada": str(data_futura),
+        "data_saida": str(data_futura + timedelta(days=3)),
+    }, headers=r_headers)
+
+    resp = await client.post("/hospedagens/checkin", json={
+        "cliente_id": cliente_resp.json()["id"],
+        "quarto_id": quarto_resp.json()["id"],
+        "versao_quarto": quarto_resp.json()["versao"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=4)).isoformat(),
+        "reserva_id": reserva_resp.json()["id"],
+    }, headers=r_headers)
+
+    assert resp.status_code == 400
+    assert "data de entrada" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_api_checkin_com_reserva_inexistente_retorna_404(
+    client: AsyncClient, token_recepcionista: str, setup_dados_iniciais
+):
+    """Check-in informando reserva_id que não existe deve retornar 404."""
+    dados = setup_dados_iniciais
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    resp = await client.post("/hospedagens/checkin", json={
+        "cliente_id": dados["cliente_id"],
+        "quarto_id": dados["quarto_id"],
+        "versao_quarto": dados["quarto_versao"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=2)).isoformat(),
+        "reserva_id": 9999,
+    }, headers=r_headers)
+
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_api_checkin_com_reserva_nao_confirmada_retorna_400(
+    client: AsyncClient, token_gerente: str, token_recepcionista: str
+):
+    """Check-in com reserva que não está CONFIRMADA (ex.: CANCELADA) deve retornar 400."""
+    g_headers = {"Authorization": f"Bearer {token_gerente}"}
+    r_headers = {"Authorization": f"Bearer {token_recepcionista}"}
+
+    cliente_resp = await client.post("/clientes/", json={"nome": "Hóspede Cancelado", "telefone": "222"}, headers=r_headers)
+    tipo_resp = await client.post("/tipos-quarto/", json={"nome": "Econômico", "precoBaseDiaria": 80.00, "capacidade": 1}, headers=g_headers)
+    quarto_resp = await client.post("/quartos/",
+                                    json={"numero": "401", "andar": 4, "tipo_quarto_id": tipo_resp.json()["id"]},
+                                    headers=g_headers)
+
+    reserva_resp = await client.post("/reservas/", json={
+        "cliente_id": cliente_resp.json()["id"],
+        "tipo_quarto_id": tipo_resp.json()["id"],
+        "data_entrada": str(date.today()),
+        "data_saida": str(date.today() + timedelta(days=2)),
+    }, headers=r_headers)
+    reserva_id = reserva_resp.json()["id"]
+
+    # Cancela a reserva
+    await client.patch(f"/reservas/{reserva_id}/cancelar", headers=r_headers)
+
+    resp = await client.post("/hospedagens/checkin", json={
+        "cliente_id": cliente_resp.json()["id"],
+        "quarto_id": quarto_resp.json()["id"],
+        "versao_quarto": quarto_resp.json()["versao"],
+        "data_checkout_previsto": (datetime.now() + timedelta(days=2)).isoformat(),
+        "reserva_id": reserva_id,
+    }, headers=r_headers)
+
+    assert resp.status_code == 400
+    assert "confirmada" in resp.json()["detail"].lower()
 
 
 @pytest.mark.asyncio
