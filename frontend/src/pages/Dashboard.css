@@ -239,6 +239,16 @@
 .room-card__limpeza--sujo { color: #d97706; }
 .room-card__limpeza--limpo { color: #16a34a; }
 
+.room-card__cliente {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: -4px 0 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .dashboard-header {

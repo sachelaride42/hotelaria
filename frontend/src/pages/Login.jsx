@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Login.css'
+import BASE_URL from '../services/api.js'
 
-const BASE_URL = 'http://localhost:8000'
+// const BASE_URL = 'http://localhost:8000'
 
 function Login() {
   const [email, setEmail] = useState('')

@@ -213,6 +213,8 @@ export default function Extrato() {
   const navigate = useNavigate()
 
   const [hospedagem, setHospedagem] = useState(null)
+  const [quarto, setQuarto]         = useState(null)
+  const [cliente, setCliente]       = useState(null)
   const [tipo, setTipo]             = useState(null)
   const [itens, setItens]           = useState([])
   const [catalogo, setCatalogo]     = useState([])
@@ -234,17 +236,20 @@ export default function Extrato() {
   useEffect(() => {
     async function load() {
       try {
-        const [hosp, itensData, catalogoData, tipos] = await Promise.all([
+        const [hosp, itensData, catalogoData, tipos, clientes] = await Promise.all([
           apiFetch(`/hospedagens/${hospedagemId}`),
           apiFetch(`/itens-consumo/hospedagem/${hospedagemId}`),
           apiFetch('/catalogo/'),
           apiFetch('/tipos-quarto/'),
+          apiFetch('/clientes/'),
         ])
-        const quarto = await apiFetch(`/quartos/${hosp.quarto_id}`)
+        const q = await apiFetch(`/quartos/${hosp.quarto_id}`)
         setHospedagem(hosp)
+        setQuarto(q)
+        setCliente(clientes.find(c => c.id === hosp.cliente_id) ?? null)
         setItens(itensData)
         setCatalogo(catalogoData)
-        setTipo(tipos.find(t => t.id === quarto.tipo_quarto_id) ?? null)
+        setTipo(tipos.find(t => t.id === q.tipo_quarto_id) ?? null)
       } catch (err) {
         if (err.status === 401) navigate('/login')
         else setError(err.message ?? 'Erro ao carregar extrato.')
@@ -350,6 +355,11 @@ export default function Extrato() {
       <button className="btn-voltar" onClick={() => navigate(-1)}>← Voltar</button>
 
       <h1>Extrato da Conta</h1>
+      {quarto && (
+        <p className="extrato-subtitle">
+          Quarto {quarto.numero}{cliente ? ` – ${cliente.nome}` : ''}
+        </p>
+      )}
 
       <section className="extrato-section" aria-labelledby="hist-title">
         <h2 id="hist-title">Histórico</h2>

@@ -1,4 +1,6 @@
-const BASE_URL = 'http://localhost:8000'
+// const BASE_URL = 'http://localhost:8000'
+const BASE_URL = 'http://192.168.68.106:8000'
+export default BASE_URL
 
 export function getUserRole() {
   const token = localStorage.getItem('token')

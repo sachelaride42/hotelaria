@@ -7,7 +7,7 @@ const menuOperacional = [
   { to: '/reservas', label: 'Reservas / Consultar Disponibilidade' },
   { to: '/hospedagens', label: 'Hospedagens ativas' },
   { to: '/lancamentos', label: 'Lançar Produtos / Serviços' },
-  { to: '/checkout', label: 'Checkout / Caixa' },
+  { to: '/checkout', label: 'Checkout e Caixa' },
 ]
 
 const menuServicos = [

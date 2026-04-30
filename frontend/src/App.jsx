@@ -30,7 +30,7 @@ function App() {
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/hospedagens" element={<GradeOcupados titulo="Hospedagens Ativas" destino="hospedagem" />} />
           <Route path="/lancamentos" element={<GradeOcupados titulo="Lançar Produtos / Serviços" destino="extrato" />} />
-          <Route path="/checkout" element={<GradeOcupados titulo="Checkout / Caixa" destino="checkout" />} />
+          <Route path="/checkout" element={<GradeOcupados titulo="Checkout e Caixa" destino="checkout" />} />
           <Route path="/hospedagem/:hospedagemId" element={<HospedagemDetalhe />} />
           <Route path="/hospedagem/:hospedagemId/extrato" element={<Extrato />} />
           <Route path="/checkout/:hospedagemId" element={<Checkout />} />

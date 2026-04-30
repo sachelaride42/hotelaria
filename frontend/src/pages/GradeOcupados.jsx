@@ -5,7 +5,7 @@ import './GradeOcupados.css'
 
 const LIMPEZA_LABEL = { LIMPO: 'Limpo', SUJO: 'Sujo' }
 
-function OccupiedCard({ quarto, tipoNome, onClick }) {
+function OccupiedCard({ quarto, tipoNome, clienteNome, onClick }) {
   const limpezaClass = `ocard__limpeza--${quarto.status_limpeza.toLowerCase()}`
 
   return (
@@ -18,6 +18,9 @@ function OccupiedCard({ quarto, tipoNome, onClick }) {
         <span className="ocard__number">{quarto.numero}</span>
         <span className="ocard__arrow" aria-hidden="true">›</span>
       </div>
+      {clienteNome && (
+        <p className="ocard__cliente">{clienteNome}</p>
+      )}
       <dl className="ocard__info">
         <div>
           <dt>Tipo</dt>
@@ -41,11 +44,12 @@ function OccupiedCard({ quarto, tipoNome, onClick }) {
  * titulo: string
  */
 export default function GradeOcupados({ titulo, destino }) {
-  const [quartos, setQuartos]           = useState([])
-  const [tipos, setTipos]               = useState({})
-  const [hospedagemMap, setHospedagemMap] = useState({}) // quartoId → hospedagemId
-  const [loading, setLoading]           = useState(true)
-  const [error, setError]               = useState(null)
+  const [quartos, setQuartos]               = useState([])
+  const [tipos, setTipos]                   = useState({})
+  const [hospedagemMap, setHospedagemMap]   = useState({}) // quartoId → hospedagemId
+  const [clienteNomeMap, setClienteNomeMap] = useState({}) // quartoId → clienteNome
+  const [loading, setLoading]               = useState(true)
+  const [error, setError]                   = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -53,15 +57,23 @@ export default function GradeOcupados({ titulo, destino }) {
       apiFetch('/quartos/?status_ocupacao=OCUPADO'),
       apiFetch('/tipos-quarto/').catch(() => []),
       apiFetch('/hospedagens/?status=ATIVA'),
+      apiFetch('/clientes/').catch(() => []),
     ])
-      .then(([quartosData, tiposData, hospedagensData]) => {
+      .then(([quartosData, tiposData, hospedagensData, clientesData]) => {
         setQuartos(quartosData)
         const tiposMap = {}
         tiposData.forEach(t => { tiposMap[t.id] = t.nome })
         setTipos(tiposMap)
+        const clienteMap = {}
+        clientesData.forEach(c => { clienteMap[c.id] = c.nome })
         const hMap = {}
-        hospedagensData.forEach(h => { hMap[h.quarto_id] = h.id })
+        const nomeMap = {}
+        hospedagensData.forEach(h => {
+          hMap[h.quarto_id] = h.id
+          nomeMap[h.quarto_id] = clienteMap[h.cliente_id] ?? ''
+        })
         setHospedagemMap(hMap)
+        setClienteNomeMap(nomeMap)
       })
       .catch(err => {
         if (err.status === 401) navigate('/login')
@@ -120,6 +132,7 @@ export default function GradeOcupados({ titulo, destino }) {
               key={quarto.id}
               quarto={quarto}
               tipoNome={tipos[quarto.tipo_quarto_id] ?? `Tipo ${quarto.tipo_quarto_id}`}
+              clienteNome={clienteNomeMap[quarto.id] ?? ''}
               onClick={() => handleClick(quarto)}
             />
           ))}

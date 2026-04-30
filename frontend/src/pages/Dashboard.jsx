@@ -6,7 +6,7 @@ import './Dashboard.css'
 const OCUPACAO_LABEL = { LIVRE: 'Livre', OCUPADO: 'Ocupado', MANUTENCAO: 'Manutenção' }
 const LIMPEZA_LABEL = { LIMPO: 'Limpo', SUJO: 'Sujo' }
 
-function RoomCard({ quarto, tipoNome, onClick, navigating }) {
+function RoomCard({ quarto, tipoNome, clienteNome, onClick, navigating }) {
   const statusClass = `room-card--${quarto.status_ocupacao.toLowerCase()}`
   const limpezaClass = `room-card__limpeza--${quarto.status_limpeza.toLowerCase()}`
 
@@ -29,6 +29,9 @@ function RoomCard({ quarto, tipoNome, onClick, navigating }) {
           }
         </div>
       </div>
+      {quarto.status_ocupacao === 'OCUPADO' && clienteNome && (
+        <p className="room-card__cliente">{clienteNome}</p>
+      )}
       <dl className="room-card__info">
         <div>
           <dt>Tipo</dt>
@@ -72,6 +75,7 @@ function StatusFilter({ value, onChange }) {
 function Dashboard() {
   const [quartos, setQuartos] = useState([])
   const [tipos, setTipos] = useState({})
+  const [clienteNomeMap, setClienteNomeMap] = useState({}) // quartoId → clienteNome
   const [filtro, setFiltro] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -101,12 +105,21 @@ function Dashboard() {
     Promise.all([
       apiFetch('/quartos/'),
       apiFetch('/tipos-quarto/').catch(() => []),
+      apiFetch('/hospedagens/?status=ATIVA').catch(() => []),
+      apiFetch('/clientes/').catch(() => []),
     ])
-      .then(([quartosData, tiposData]) => {
+      .then(([quartosData, tiposData, hospedagensData, clientesData]) => {
         setQuartos(quartosData)
         const tiposMap = {}
         tiposData.forEach(t => { tiposMap[t.id] = t.nome })
         setTipos(tiposMap)
+        const clienteMap = {}
+        clientesData.forEach(c => { clienteMap[c.id] = c.nome })
+        const nomeMap = {}
+        hospedagensData.forEach(h => {
+          nomeMap[h.quarto_id] = clienteMap[h.cliente_id] ?? ''
+        })
+        setClienteNomeMap(nomeMap)
       })
       .catch(err => {
         if (err.status === 401) {
@@ -184,6 +197,7 @@ function Dashboard() {
               key={quarto.id}
               quarto={quarto}
               tipoNome={tipos[quarto.tipo_quarto_id] ?? `Tipo ${quarto.tipo_quarto_id}`}
+              clienteNome={clienteNomeMap[quarto.id] ?? ''}
               onClick={() => handleCardClick(quarto)}
               navigating={navigatingId === quarto.id}
             />

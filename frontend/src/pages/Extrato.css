@@ -4,6 +4,12 @@
   gap: 28px;
 }
 
+.extrato-subtitle {
+  font-size: 14px;
+  color: var(--text);
+  margin: -20px 0 0;
+}
+
 /* ── Back button ── */
 .btn-voltar {
   background: none;
