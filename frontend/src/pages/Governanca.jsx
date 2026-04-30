@@ -66,7 +66,7 @@ function Governanca() {
     } catch (err) {
       if (err.status === 401) navigate('/login')
       else if (err.status === 409) setErroAcao('Conflito de versão. Recarregue a página.')
-      else if (err.status === 400) setErroAcao(`Quarto ${quarto.numero}: ${err.message}`)
+      else if (err.status === 400) setErroAcao(`Quarto ${quarto.numero}: operação não permitida neste momento.`)
       else setErroAcao(err.message)
     } finally {
       setAtualizandoLimpezaId(null)
@@ -95,10 +95,10 @@ function Governanca() {
       } catch (err) {
         if (err.status === 401) { navigate('/login'); return }
         if (err.status === 400) continue
-        erros.push(`Quarto ${quarto.numero}: ${err.message}`)
+        erros.push(`Quarto ${quarto.numero}: falha ao atualizar.`)
       }
     }
-    if (erros.length > 0) setErroAcao(`${erros.length} quarto(s) com erro: ${erros.join('; ')}`)
+    if (erros.length > 0) setErroAcao(`${erros.length} quarto(s) com erro ao atualizar. Verifique e tente novamente.`)
     setLimparTodosLoading(false)
   }
 

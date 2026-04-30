@@ -52,7 +52,7 @@ export default function HospedagemDetalhe() {
         setCliente(cli)
       } catch (err) {
         if (err.status === 401) navigate('/login')
-        else setError(err.message ?? 'Erro ao carregar hospedagem.')
+        else setError(err.message ?? 'Falha ao carregar os dados da hospedagem. Recarregue a página.')
       } finally {
         setLoading(false)
       }

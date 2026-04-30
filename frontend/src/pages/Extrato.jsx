@@ -58,7 +58,7 @@ function ItemRow({ it, ativo, onSaved, onDeleted }) {
       onSaved(atualizado)
       setEditing(false)
     } catch (err) {
-      setErro(err.message ?? 'Erro ao salvar.')
+      setErro(err.message ?? 'Falha ao salvar o item. Tente novamente.')
     } finally {
       setSalvando(false)
     }
@@ -70,7 +70,7 @@ function ItemRow({ it, ativo, onSaved, onDeleted }) {
       await apiFetch(`/itens-consumo/${it.id}`, { method: 'DELETE' })
       onDeleted(it.id)
     } catch (err) {
-      setErro(err.message ?? 'Erro ao excluir.')
+      setErro(err.message ?? 'Falha ao excluir o item. Tente novamente.')
       setExcluindo(false)
       setConfirmando(false)
     }
@@ -252,7 +252,7 @@ export default function Extrato() {
         setTipo(tipos.find(t => t.id === q.tipo_quarto_id) ?? null)
       } catch (err) {
         if (err.status === 401) navigate('/login')
-        else setError(err.message ?? 'Erro ao carregar extrato.')
+        else setError(err.message ?? 'Falha ao carregar o extrato. Recarregue a página.')
       } finally {
         setLoading(false)
       }
@@ -321,7 +321,7 @@ export default function Extrato() {
       clearTimeout(sucessoTimer.current)
       sucessoTimer.current = setTimeout(() => setSucesso(false), 3000)
     } catch (err) {
-      setErroLanc(err.message ?? 'Erro ao lançar item.')
+      setErroLanc(err.message ?? 'Falha ao lançar o item. Tente novamente.')
     } finally {
       setEnviando(false)
     }

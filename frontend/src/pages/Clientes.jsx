@@ -54,7 +54,7 @@ export default function Clientes() {
       setClientes(data)
     } catch (err) {
       if (err.status === 401) { navigate('/login'); return }
-      setErroLista('Erro ao carregar clientes.')
+      setErroLista('Falha ao carregar a lista de clientes. Recarregue a página.')
     } finally {
       setCarregando(false)
     }

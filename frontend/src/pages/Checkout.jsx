@@ -96,7 +96,7 @@ export default function Checkout() {
         setCliente(clientes.find(c => c.id === hosp.cliente_id) ?? null)
       } catch (err) {
         if (err.status === 401) navigate('/login')
-        else setError(err.message ?? 'Erro ao carregar dados.')
+        else setError(err.message ?? 'Falha ao carregar os dados da hospedagem. Recarregue a página.')
       } finally {
         setLoading(false)
       }
@@ -158,7 +158,7 @@ export default function Checkout() {
       setFormaAtual('')
       setValorAtual('')
     } catch (err) {
-      setErroPag(err.message ?? 'Erro ao registrar pagamento.')
+      setErroPag(err.message ?? 'Falha ao registrar o pagamento. Tente novamente.')
     } finally {
       setAdicionando(false)
     }
@@ -188,7 +188,7 @@ export default function Checkout() {
       })
       navigate('/', { state: { sucesso: 'Checkout realizado com sucesso!' } })
     } catch (err) {
-      setErroCheckout(err.message ?? 'Erro ao realizar checkout.')
+      setErroCheckout(err.message ?? 'Falha ao finalizar o checkout. Tente novamente.')
       setConfirmando(false)
     }
   }

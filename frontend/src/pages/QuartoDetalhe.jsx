@@ -41,7 +41,7 @@ export default function QuartoDetalhe() {
         setTipo(tipos.find(t => t.id === q.tipo_quarto_id) ?? null)
       } catch (err) {
         if (err.status === 401) navigate('/login')
-        else setError(err.message ?? 'Erro ao carregar quarto.')
+        else setError(err.message ?? 'Falha ao carregar os dados do quarto. Recarregue a página.')
       } finally {
         setLoading(false)
       }
