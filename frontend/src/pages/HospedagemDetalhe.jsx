@@ -129,28 +129,9 @@ export default function HospedagemDetalhe() {
       </div>
 
       <nav className="hospedagem-nav" aria-label="Seções da hospedagem">
-        <Link
-          className="nav-link"
-          to={`/hospedagem/${hospedagemId}/extrato`}
-        >
-          Extrato da Conta
-        </Link>
-        <button
-          className="nav-link nav-link--disabled"
-          disabled
-          title="Em breve"
-          aria-disabled="true"
-        >
-          Hóspedes
-        </button>
-        <button
-          className="nav-link nav-link--disabled"
-          disabled
-          title="Em breve"
-          aria-disabled="true"
-        >
-          Histórico
-        </button>
+        <Link className="nav-link" to={`/hospedagem/${hospedagemId}/extrato`}>Extrato da Conta</Link>
+        <Link className="nav-link" to={`/hospedagem/${hospedagemId}/hospede`}>Hóspede</Link>
+        <Link className="nav-link" to={`/hospedagem/${hospedagemId}/historico`}>Histórico</Link>
       </nav>
 
       {hospedagem.status === 'ATIVA' && (

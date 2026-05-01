@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiFetch, getUserRole } from '../services/api'
+import { apiFetch, getUserRole, getUserEmail } from '../services/api'
 import './UsuariosAdmin.css'
 
 const TIPO_LABEL = { GERENTE: 'Gerente', RECEPCIONISTA: 'Recepcionista' }
@@ -22,6 +22,7 @@ function UsuariosAdmin() {
   const navigate = useNavigate()
 
   const role = getUserRole()
+  const emailLogado = getUserEmail()
 
   const usuariosFiltrados = usuarios.filter(u => {
     const nomeOk = !filtroNome.trim() || u.nome.toLowerCase().includes(filtroNome.toLowerCase())
@@ -203,22 +204,28 @@ function UsuariosAdmin() {
                       </span>
                     </td>
                     <td>
-                      <div className="us-acoes">
-                        <button
-                          className="btn-acao"
-                          onClick={() => iniciarEdicao(usuario)}
-                          aria-label={`Editar ${usuario.nome}`}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className="btn-acao btn-acao--perigo"
-                          onClick={() => { setConfirmandoExcluir(usuario.id); setErroExcluir(null) }}
-                          aria-label={`Excluir ${usuario.nome}`}
-                        >
-                          Excluir
-                        </button>
-                      </div>
+                      {usuario.email === emailLogado ? (
+                        <span className="us-proprio-usuario" title="Você não pode alterar o seu próprio usuário">
+                          Você
+                        </span>
+                      ) : (
+                        <div className="us-acoes">
+                          <button
+                            className="btn-acao"
+                            onClick={() => iniciarEdicao(usuario)}
+                            aria-label={`Editar ${usuario.nome}`}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="btn-acao btn-acao--perigo"
+                            onClick={() => { setConfirmandoExcluir(usuario.id); setErroExcluir(null) }}
+                            aria-label={`Excluir ${usuario.nome}`}
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

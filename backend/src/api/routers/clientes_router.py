@@ -45,6 +45,18 @@ async def criar_cliente(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(erro_banco))
 
 
+@router.get("/{cliente_id}", response_model=ClienteOutput)
+async def buscar_cliente_por_id(
+        cliente_id: int,
+        repo: ClienteRepository = Depends(get_cliente_repo)
+):
+    """Retorna um cliente pelo ID."""
+    cliente = await repo.buscar_por_id(cliente_id)
+    if not cliente:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente não encontrado.")
+    return cliente
+
+
 @router.get("/", response_model=List[ClienteOutput])
 async def buscar_clientes(
         nome: Optional[str] = Query(None, description="Busca parcial pelo nome"),

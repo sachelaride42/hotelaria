@@ -1,0 +1,137 @@
+.hhist-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hhist-voltar {
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  align-self: flex-start;
+}
+
+.hhist-voltar:hover { text-decoration: underline; }
+
+.hhist-page h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.hhist-vazio {
+  color: var(--text);
+  font-size: 14px;
+  padding: 16px 0;
+}
+
+/* ── Timeline ── */
+.hhist-timeline {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.hhist-timeline::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: var(--border);
+}
+
+.hhist-evento {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 0 0 20px;
+  position: relative;
+}
+
+.hhist-ponto {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  margin-top: 1px;
+  position: relative;
+  z-index: 1;
+}
+
+.hhist-evento--checkin  .hhist-ponto { border-color: #15803d; background: #dcfce7; }
+.hhist-evento--checkout .hhist-ponto { border-color: #3730a3; background: #e0e7ff; }
+.hhist-evento--pagamento .hhist-ponto { border-color: #b45309; background: #fef3c7; }
+.hhist-evento--consumo   .hhist-ponto { border-color: var(--accent); background: var(--accent-bg); }
+
+.hhist-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 1px;
+}
+
+.hhist-data {
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 400;
+}
+
+.hhist-titulo {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+.hhist-detalhe {
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* ── Feedback ── */
+.hhist-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.hhist-feedback--error { color: #dc2626; }
+
+.hhist-btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) {
+  .hhist-page h1 { font-size: 22px; }
+}

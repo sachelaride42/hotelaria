@@ -12,6 +12,16 @@ export function getUserRole() {
   }
 }
 
+export function getUserEmail() {
+  const token = localStorage.getItem('token')
+  if (!token) return null
+  try {
+    return JSON.parse(atob(token.split('.')[1])).sub ?? null
+  } catch {
+    return null
+  }
+}
+
 function getHeaders() {
   const token = localStorage.getItem('token')
   return {

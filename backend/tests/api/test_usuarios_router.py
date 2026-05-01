@@ -154,6 +154,20 @@ async def test_api_impedir_gerente_deletar_proprio_usuario(client: AsyncClient, 
     assert "próprio usuário" in response.json()["detail"]
 
 
+@pytest.mark.asyncio
+async def test_api_impedir_gerente_editar_proprio_usuario(client: AsyncClient, token_gerente: str):
+    """Gerente não pode editar a si mesmo."""
+    headers = {"Authorization": f"Bearer {token_gerente}"}
+    resp = await client.get("/usuarios/?tipo=GERENTE", headers=headers)
+    proprio_id = resp.json()[0]["id"]
+
+    payload_update = {"nome": "Novo Nome", "email": "novo@hotel.com", "tipo": "GERENTE"}
+    response = await client.put(f"/usuarios/{proprio_id}", json=payload_update, headers=headers)
+
+    assert response.status_code == 403
+    assert "próprio usuário" in response.json()["detail"]
+
+
 # --- GET /usuarios/ ---
 
 @pytest.mark.asyncio

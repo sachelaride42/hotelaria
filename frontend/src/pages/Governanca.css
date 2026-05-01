@@ -262,6 +262,17 @@
   color: var(--accent);
 }
 
+.btn.btn--accent-outline {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+.btn.btn--accent-outline:hover:not(:disabled) {
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
 .btn--ghost {
   background: transparent;
   color: var(--text);

@@ -4,6 +4,67 @@ Projeto de Conclusão de Curso (TCC) em Engenharia de Software. Automatiza o flu
 
 ---
 
+## Interface
+
+### Login
+![Login](docs/screenshots/login.png)
+
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
+
+### Reservas
+#### Criar Reserva
+![Criar reserva](docs/screenshots/criar-reserva.png)
+#### Gestão de Reservas
+![Gestão de reservas](docs/screenshots/gestao-de-reservas.png)
+
+### Check-in
+#### Check-in - etapa 1
+![Check-in — etapa 1](docs/screenshots/checkin-etapa-1.png)
+#### Check-in - etapa 2
+![Check-in — etapa 2](docs/screenshots/checkin-etapa-2.png)
+
+### Hospedagens
+#### Hospedagens ativas
+![Hospedagens ativas](docs/screenshots/hospedagens-ativas.png)
+#### Detalhes da Hospedagem
+![Detalhes da hospedagem](docs/screenshots/detalhes-da-hospedagem.png)
+#### Hóspede
+![Hóspede](docs/screenshots/hospede.png)
+#### Histórico da Hospedagem
+![Histórico de hospedagem](docs/screenshots/historico-hospedagem.png)
+#### Extrato da conta
+![Extrato da conta](docs/screenshots/extrato-da-conta.png)
+
+### Produtos / Serviços
+#### Lançar Produtos / Serviços
+![Lançar Produtos / Serviços](docs/screenshots/lancar%20produtos-servicos.png)
+#### Extrato da conta
+![Extrato da conta](docs/screenshots/extrato-da-conta.png)
+
+### Checkout
+#### Checkout e Caixa
+![Checkout e caixa](docs/screenshots/checkout-e-caixa.png)
+#### Realizar Checkout
+![Realizar checkout](docs/screenshots/realizar-checkout.png)
+
+### Governança
+![Governança](docs/screenshots/governanca.png)
+
+### Administração
+#### Gestão de Clientes
+![Gestão de clientes](docs/screenshots/gestao-de-clientes.png)
+#### Gestão de Produtos e Serviços
+![Gestão de produtos e serviços](docs/screenshots/gestao-de-produtos-servicos.png)
+#### Gestão de Quartos
+![Gestão de quartos](docs/screenshots/gestao-de-quartos.png)
+#### Gestão de Tipos de Quarto
+![Tipos de quarto](docs/screenshots/gestao-de-tipos-de-quartos.png)
+#### Gestão de Usuários
+![Gestão de usuários](docs/screenshots/gestao-de-usuarios.png)
+
+---
+
 ## Tecnologias
 
 | Camada | Stack |

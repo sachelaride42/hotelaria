@@ -65,9 +65,15 @@ async def criar_usuario(
 async def atualizar_usuario(
     usuario_id: int,
     payload: UsuarioAtualizarInput,
+    usuario_logado: Usuario = Depends(exigir_gerente),
     repo: UsuarioRepository = Depends(get_usuario_repo)
 ):
     """Atualiza dados de um usuário existente. Se a senha for omitida, mantém a atual."""
+    if usuario_logado.id == usuario_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não pode editar o seu próprio usuário."
+        )
     usuario_existente = await repo.buscar_por_id(usuario_id)
     if not usuario_existente:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado.")

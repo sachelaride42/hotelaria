@@ -138,6 +138,13 @@
   border-bottom-color: transparent;
 }
 
+.nav-link--ativo {
+  color: var(--text-h);
+  border-bottom-color: var(--accent);
+  font-weight: 500;
+  cursor: default;
+}
+
 /* ── Checkout area ── */
 .checkout-area {
   display: flex;

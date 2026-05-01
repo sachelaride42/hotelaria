@@ -266,7 +266,7 @@ function Governanca() {
           )}
 
           <div className="gov-actions-bottom">
-            <button className="btn btn--outline" onClick={gerarRelatorio}>
+            <button className="btn btn--accent-outline" onClick={gerarRelatorio}>
               Gerar Relatório de Limpeza
             </button>
           </div>

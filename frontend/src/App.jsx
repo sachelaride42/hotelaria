@@ -6,6 +6,8 @@ import Reservas from './pages/Reservas'
 import Checkin from './pages/Checkin'
 import Clientes from './pages/Clientes'
 import HospedagemDetalhe from './pages/HospedagemDetalhe'
+import HospedagemHospedes from './pages/HospedagemHospedes'
+import HospedagemHistorico from './pages/HospedagemHistorico'
 import QuartoDetalhe from './pages/QuartoDetalhe'
 import Extrato from './pages/Extrato'
 import Checkout from './pages/Checkout'
@@ -33,6 +35,8 @@ function App() {
           <Route path="/checkout" element={<GradeOcupados titulo="Checkout e Caixa" destino="checkout" />} />
           <Route path="/hospedagem/:hospedagemId" element={<HospedagemDetalhe />} />
           <Route path="/hospedagem/:hospedagemId/extrato" element={<Extrato />} />
+          <Route path="/hospedagem/:hospedagemId/hospede" element={<HospedagemHospedes />} />
+          <Route path="/hospedagem/:hospedagemId/historico" element={<HospedagemHistorico />} />
           <Route path="/checkout/:hospedagemId" element={<Checkout />} />
           <Route path="/quarto/:quartoId" element={<QuartoDetalhe />} />
           <Route path="/governanca" element={<Governanca />} />
