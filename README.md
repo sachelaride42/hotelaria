@@ -4,64 +4,84 @@ Projeto de Conclusão de Curso (TCC) em Engenharia de Software. Automatiza o flu
 
 ---
 
+## Funcionalidades
+
+- Dashboard com grade de quartos e status em tempo real
+- Check-in de hóspedes
+- Gestão de reservas
+- Controle de hospedagens ativas com grade de ocupação
+- Lançamento de produtos e serviços por hospedagem
+- Extrato financeiro por hospedagem
+- Checkout e fechamento de conta
+- Governança: controle e atualização do status de limpeza dos quartos
+- Cadastro e gestão de clientes
+- Cadastro e gestão de quartos
+- Cadastro e gestão de tipos de quarto
+- Cadastro e gestão de produtos e serviços
+- Gestão de usuários (recepcionistas e gerentes)
+- Perfil de usuário autenticado
+
+---
+
 ## Interface
 
 ### Login
-![Login](docs/screenshots/login.png)
+<img src="docs/screenshots/login.png" alt="Login" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ### Dashboard
-![Dashboard](docs/screenshots/dashboard.png)
+<img src="docs/screenshots/dashboard.png" alt="Dashboard" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ### Reservas
 #### Criar Reserva
-![Criar reserva](docs/screenshots/criar-reserva.png)
+<img src="docs/screenshots/criar-reserva.png" alt="Criar reserva" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Gestão de Reservas
-![Gestão de reservas](docs/screenshots/gestao-de-reservas.png)
+<img src="docs/screenshots/gestao-de-reservas.png" alt="Gestão de reservas" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ### Check-in
 #### Check-in - etapa 1
-![Check-in — etapa 1](docs/screenshots/checkin-etapa-1.png)
+<img src="docs/screenshots/checkin-etapa-1.png" alt="Check-in — etapa 1" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Check-in - etapa 2
-![Check-in — etapa 2](docs/screenshots/checkin-etapa-2.png)
+<img src="docs/screenshots/checkin-etapa-2.png" alt="Check-in — etapa 2" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ### Hospedagens
 #### Hospedagens ativas
-![Hospedagens ativas](docs/screenshots/hospedagens-ativas.png)
+<img src="docs/screenshots/hospedagens-ativas.png" alt="Hospedagens ativas" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Detalhes da Hospedagem
-![Detalhes da hospedagem](docs/screenshots/detalhes-da-hospedagem.png)
+<img src="docs/screenshots/detalhes-da-hospedagem.png" alt="Detalhes da hospedagem" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Hóspede
-![Hóspede](docs/screenshots/hospede.png)
+<img src="docs/screenshots/hospede.png" alt="Hóspede" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Histórico da Hospedagem
-![Histórico de hospedagem](docs/screenshots/historico-hospedagem.png)
+<img src="docs/screenshots/historico-hospedagem.png" alt="Histórico de hospedagem" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Extrato da conta
-![Extrato da conta](docs/screenshots/extrato-da-conta.png)
+<img src="docs/screenshots/extrato-da-conta.png" alt="Extrato da conta" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ### Produtos / Serviços
 #### Lançar Produtos / Serviços
-![Lançar Produtos / Serviços](docs/screenshots/lancar%20produtos-servicos.png)
+<img src="docs/screenshots/lancar%20produtos-servicos.png" alt="Lançar Produtos / Serviços" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Extrato da conta
-![Extrato da conta](docs/screenshots/extrato-da-conta.png)
+<img src="docs/screenshots/extrato-da-conta.png" alt="Extrato da conta" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ### Checkout
 #### Checkout e Caixa
-![Checkout e caixa](docs/screenshots/checkout-e-caixa.png)
+<img src="docs/screenshots/checkout-e-caixa.png" alt="Checkout e caixa" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Realizar Checkout
-![Realizar checkout](docs/screenshots/realizar-checkout.png)
+<img src="docs/screenshots/realizar-checkout.png" alt="Realizar checkout" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ### Governança
-![Governança](docs/screenshots/governanca.png)
+#### Governança
+<img src="docs/screenshots/governanca.png" alt="Governança" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ### Administração
 #### Gestão de Clientes
-![Gestão de clientes](docs/screenshots/gestao-de-clientes.png)
+<img src="docs/screenshots/gestao-de-clientes.png" alt="Gestão de clientes" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Gestão de Produtos e Serviços
-![Gestão de produtos e serviços](docs/screenshots/gestao-de-produtos-servicos.png)
+<img src="docs/screenshots/gestao-de-produtos-servicos.png" alt="Gestão de produtos e serviços" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Gestão de Quartos
-![Gestão de quartos](docs/screenshots/gestao-de-quartos.png)
+<img src="docs/screenshots/gestao-de-quartos.png" alt="Gestão de quartos" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Gestão de Tipos de Quarto
-![Tipos de quarto](docs/screenshots/gestao-de-tipos-de-quartos.png)
+<img src="docs/screenshots/gestao-de-tipos-de-quartos.png" alt="Tipos de quarto" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 #### Gestão de Usuários
-![Gestão de usuários](docs/screenshots/gestao-de-usuarios.png)
+<img src="docs/screenshots/gestao-de-usuarios.png" alt="Gestão de usuários" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
 
 ---
 
@@ -219,3 +239,21 @@ projetoHotelaria/
 
 ---
 
+## Sugestões para futuros aprimoramentos
+
+O atual sistema já cumpre todas as funcionalidades para o escopo de trabalho em que foi definido. Porém, ainda há espaço para aprimoramentos se o objetivo for tornar o sistema mais robusto.
+
+- Cadastro completo de hóspedes com dados legalmente exigidos
+- Auditabilidade econômico-financeira com registros imutáveis
+- Conformidade e auditabilidade segundo a LGPD
+- Rastreabilidade de operações críticas por funcionário responsável
+- Fechamento de caixa por turno vinculado ao operador
+- Relatório de receita por período com exportação
+- Integração com meios de pagamento eletrônico (cartão e PIX)
+- Emissão de nota fiscal eletrônica (NF-e) no checkout
+- Controle de estoque de produtos com alertas de reposição
+- Controle de manutenção preventiva e corretiva de quartos
+- Painel de indicadores gerenciais (taxa de ocupação, RevPAR, ticket médio)
+- Integração com plataformas de reserva online (Booking.com, Airbnb)
+- Portal de autoatendimento para hóspedes
+- Backup automático e plano de recuperação de dados

@@ -19,6 +19,7 @@ import Produtos from './pages/Produtos'
 import TiposQuartoAdmin from './pages/TiposQuartoAdmin'
 import UsuariosAdmin from './pages/UsuariosAdmin'
 import Perfil from './pages/Perfil'
+import DetalheSistema from './pages/DetalheSistema'
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/detalhes-sistema" element={<DetalheSistema />} />
         </Route>
       </Routes>
     </BrowserRouter>

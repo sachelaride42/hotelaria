@@ -99,6 +99,14 @@
 .perfil-tipo--gerente       { background: var(--accent-bg); color: var(--accent); }
 .perfil-tipo--recepcionista { background: #e0e7ff; color: #3730a3; }
 
+/* ── Link sistema ── */
+.perfil-link-sistema {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.perfil-link-sistema:hover { text-decoration: underline; }
+
 /* ── Spinner ── */
 .spinner {
   width: 28px;

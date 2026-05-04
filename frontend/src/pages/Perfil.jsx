@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { apiFetch } from '../services/api'
 import './Perfil.css'
 
@@ -61,6 +61,16 @@ function Perfil() {
                 </span>
               </dd>
             </div>
+            {usuario.tipo === 'GERENTE' && (
+              <div className="perfil-campo">
+                <dt className="perfil-campo__label">Sistema</dt>
+                <dd className="perfil-campo__valor">
+                  <Link to="/detalhes-sistema" className="perfil-link-sistema">
+                    Detalhes do Sistema
+                  </Link>
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       )}
