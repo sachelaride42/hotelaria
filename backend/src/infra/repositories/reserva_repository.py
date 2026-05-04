@@ -83,7 +83,7 @@ class ReservaRepository:
         """Busca no banco quantas reservas já existem nesse período para esse tipo de quarto."""
         conditions = [
             ReservaORM.tipo_quarto_id == tipo_quarto_id,
-            ReservaORM.status == StatusReserva.CONFIRMADA,
+            ReservaORM.status.in_([StatusReserva.CONFIRMADA, StatusReserva.UTILIZADA]),
             ReservaORM.data_entrada < saida,
             ReservaORM.data_saida > entrada,
         ]
