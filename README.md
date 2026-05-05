@@ -25,63 +25,60 @@ Projeto de Conclusão de Curso (TCC) em Engenharia de Software. Automatiza o flu
 
 ## Interface
 
-### Login
-<img src="docs/screenshots/login.png" alt="Login" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
-
 ### Dashboard
-<img src="docs/screenshots/dashboard.png" alt="Dashboard" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Dashboard](docs/screenshots/dashboard.png)
 
 ### Reservas
 #### Criar Reserva
-<img src="docs/screenshots/criar-reserva.png" alt="Criar reserva" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Criar reserva](docs/screenshots/criar-reserva.png)
 #### Gestão de Reservas
-<img src="docs/screenshots/gestao-de-reservas.png" alt="Gestão de reservas" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Gestão de reservas](docs/screenshots/gestao-de-reservas.png)
 
 ### Check-in
 #### Check-in - etapa 1
-<img src="docs/screenshots/checkin-etapa-1.png" alt="Check-in — etapa 1" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Check-in — etapa 1](docs/screenshots/checkin-etapa-1.png)
 #### Check-in - etapa 2
-<img src="docs/screenshots/checkin-etapa-2.png" alt="Check-in — etapa 2" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Check-in — etapa 2](docs/screenshots/checkin-etapa-2.png)
 
 ### Hospedagens
 #### Hospedagens ativas
-<img src="docs/screenshots/hospedagens-ativas.png" alt="Hospedagens ativas" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Hospedagens ativas](docs/screenshots/hospedagens-ativas.png)
 #### Detalhes da Hospedagem
-<img src="docs/screenshots/detalhes-da-hospedagem.png" alt="Detalhes da hospedagem" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Detalhes da hospedagem](docs/screenshots/detalhes-da-hospedagem.png)
 #### Hóspede
-<img src="docs/screenshots/hospede.png" alt="Hóspede" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Hóspede](docs/screenshots/hospede.png)
 #### Histórico da Hospedagem
-<img src="docs/screenshots/historico-hospedagem.png" alt="Histórico de hospedagem" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Histórico de hospedagem](docs/screenshots/historico-hospedagem.png)
 #### Extrato da conta
-<img src="docs/screenshots/extrato-da-conta.png" alt="Extrato da conta" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Extrato da conta](docs/screenshots/extrato-da-conta.png)
 
 ### Produtos / Serviços
 #### Lançar Produtos / Serviços
-<img src="docs/screenshots/lancar%20produtos-servicos.png" alt="Lançar Produtos / Serviços" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Lançar Produtos / Serviços](docs/screenshots/lancar%20produtos-servicos.png)
 #### Extrato da conta
-<img src="docs/screenshots/extrato-da-conta.png" alt="Extrato da conta" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Extrato da conta](docs/screenshots/extrato-da-conta.png)
 
 ### Checkout
 #### Checkout e Caixa
-<img src="docs/screenshots/checkout-e-caixa.png" alt="Checkout e caixa" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Checkout e caixa](docs/screenshots/checkout-e-caixa.png)
 #### Realizar Checkout
-<img src="docs/screenshots/realizar-checkout.png" alt="Realizar checkout" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Realizar checkout](docs/screenshots/realizar-checkout.png)
 
 ### Governança
 #### Governança
-<img src="docs/screenshots/governanca.png" alt="Governança" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Governança](docs/screenshots/governanca.png)
 
 ### Administração
 #### Gestão de Clientes
-<img src="docs/screenshots/gestao-de-clientes.png" alt="Gestão de clientes" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Gestão de clientes](docs/screenshots/gestao-de-clientes.png)
 #### Gestão de Produtos e Serviços
-<img src="docs/screenshots/gestao-de-produtos-servicos.png" alt="Gestão de produtos e serviços" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Gestão de produtos e serviços](docs/screenshots/gestao-de-produtos-servicos.png)
 #### Gestão de Quartos
-<img src="docs/screenshots/gestao-de-quartos.png" alt="Gestão de quartos" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Gestão de quartos](docs/screenshots/gestao-de-quartos.png)
 #### Gestão de Tipos de Quarto
-<img src="docs/screenshots/gestao-de-tipos-de-quartos.png" alt="Tipos de quarto" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Tipos de quarto](docs/screenshots/gestao-de-tipos-de-quartos.png)
 #### Gestão de Usuários
-<img src="docs/screenshots/gestao-de-usuarios.png" alt="Gestão de usuários" style="border: 2px solid #000; border-radius: 4px; display: block; margin: 8px 0;" />
+![Gestão de usuários](docs/screenshots/gestao-de-usuarios.png)
 
 ---
 
