@@ -3,6 +3,7 @@ from sqlalchemy.future import select
 from sqlalchemy import func
 from typing import List
 from decimal import Decimal
+from typing import Optional
 
 from backend.src.domain.models.item_consumo import ItemConsumo
 from backend.src.infra.orm_models.item_consumo_orm import ItemConsumoORM

@@ -23,6 +23,44 @@ Projeto de Conclusão de Curso (TCC) em Engenharia de Software. Automatiza o flu
 
 ---
 
+## Arquitetura do Backend
+ 
+O backend segue **DDD** e **Clean Architecture** com separação em três camadas. A dependência flui de fora para dentro — o domínio não conhece FastAPI nem SQLAlchemy.
+ 
+```
+api/        → Routers, Schemas Pydantic, autenticação JWT
+domain/     → Entidades, Serviços de negócio, regras puras
+infra/      → ORM (SQLAlchemy async), Repositórios
+```
+ 
+- **Entidades** (`domain/models/`) são dataclasses com invariantes validadas no `__post_init__`. Ex.: `Quarto` proíbe ocupar um quarto sujo; `Hospedagem` controla a transição de estado via `realizar_checkout()`.
+- **Serviços de domínio** (`domain/services/`) encapsulam lógica sem acesso ao banco: cálculo de diárias com late checkout, validação de pagamento, disponibilidade de quartos.
+- **Repositórios** (`infra/repositories/`) isolam o SQLAlchemy do resto. Cada ORM Model implementa `to_domain()` e erros de banco são convertidos em exceções (`CPFDuplicadoError`, `ConcorrenciaQuartoError`).
+- **Optimistic Locking** no `QuartoORM` via `version_id_col` do SQLAlchemy previne condições de corrida no check-in simultâneo.
+- **Testes** em três níveis: unitários do domínio (sem banco), integração dos repositórios (SQLite in-memory) e end-to-end dos endpoints (httpx + ASGITransport).
+---
+
+## Organização do Frontend
+ 
+Single Page Application em **React 19 + React Router v7 + Vite**, sem gerenciamento de estado global. Todo estado vive nos componentes via hooks.
+ 
+```
+components/   → Layout compartilhado (sidebar, topbar, <Outlet />)
+pages/        → Uma página por rota, cada uma com seu .css
+services/     → apiFetch (injeta JWT, trata erros HTTP)
+utils/        → Máscaras de input (CPF, telefone)
+```
+ 
+Cada página segue o mesmo padrão: `useEffect` para carregar dados, estados de `loading`/`error`, feedback visual antes do conteúdo. Páginas restritas a gerentes verificam o role decodificado do JWT via `getUserRole()`.
+ 
+Páginas com comportamento mais elaborado:
+ 
+- **Checkin** — máquina de três etapas (busca → confirmação → sucesso), suporta walk-in e alteração de preço de diária por gerentes.
+- **Extrato** — edição e exclusão inline por linha de consumo, lançamento de itens do catálogo ou avulsos.
+- **Checkout** — recalcula o total em tempo real ao alterar o horário de saída, aplicando as mesmas regras de late checkout do backend.
+- **Governança** — alteração de status de limpeza com confirmação por modal, ação em massa e exportação de relatório PDF via `jsPDF`.
+---
+
 ## Interface
 
 ### Dashboard
