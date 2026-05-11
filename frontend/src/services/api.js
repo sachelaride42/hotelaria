@@ -1,5 +1,5 @@
-const BASE_URL = 'http://localhost:8000'
-// const BASE_URL = 'http://192.168.68.106:8000'
+const BASE_URL = import.meta.env.VITE_BASE_URL
+
 export default BASE_URL
 
 export function getUserRole() {

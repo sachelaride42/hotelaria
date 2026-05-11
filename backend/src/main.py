@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
@@ -55,9 +56,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+origins_str = os.getenv("FRONTEND_URL", "*")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção, substituir por domínios específicos do frontend
+    allow_origins=[origins_str],  # Em produção, substituir por domínios específicos do frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
