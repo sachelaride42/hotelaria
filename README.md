@@ -178,6 +178,8 @@ SECRET_KEY=<gere uma chave abaixo>
 > python -c "import secrets; print(secrets.token_hex(32))"
 > ```
 
+
+
 ### 4. Instale as dependências do backend e aplique as migrations
 
 ```bash
@@ -225,9 +227,24 @@ Na primeira inicialização, um usuário gerente padrão é criado automaticamen
 
 > Altere a senha após o primeiro acesso.
 
-### 6. Instale as dependências do frontend e inicie
+### 6. Configure o frontend
 
 ```bash
+# Na raiz do projeto
+cp frontend/.env.example frontend/.env
+```
+
+Abra `frontend/.env` e preencha a URL da API:
+
+```dotenv
+VITE_BASE_URL=http://localhost:8000
+```
+
+
+### 7. Instale as dependências do frontend e inicie
+
+```bash
+# A partir da raiz do projeto
 cd frontend
 npm install
 npm run dev
@@ -287,7 +304,7 @@ O atual sistema já cumpre todas as funcionalidades para o escopo de trabalho em
 - Integração com meios de pagamento eletrônico (cartão e PIX)
 - Emissão de nota fiscal eletrônica (NF-e) no checkout
 - Controle de estoque de produtos com alertas de reposição
-- Controle de manutenção preventiva e corretiva de quartos
+- Tratamento automatizado de reservas em lista de espera
 - Painel de indicadores gerenciais (taxa de ocupação, RevPAR, ticket médio)
 - Integração com plataformas de reserva online (Booking.com, Airbnb)
 - Portal de autoatendimento para hóspedes

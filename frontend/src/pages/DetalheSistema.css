@@ -4,18 +4,20 @@
   gap: 28px;
 }
 
-.detalhe-sistema-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.detalhe-sistema-header h1 {
+.detalhe-sistema-page h1 {
   font-size: 28px;
   font-weight: 600;
   color: var(--text-h);
   letter-spacing: -0.5px;
   margin: 0;
+}
+
+.detalhe-sistema-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+  letter-spacing: -0.3px;
 }
 
 .detalhe-sistema-section {

@@ -28,7 +28,7 @@ const SUGESTOES = [
   'Integração com meios de pagamento eletrônico (cartão e PIX)',
   'Emissão de nota fiscal eletrônica (NF-e) no checkout',
   'Controle de estoque de produtos com alertas de reposição',
-  'Controle de manutenção preventiva e corretiva de quartos',
+  'Tratamento automatizado de reservas em lista de espera',
   'Painel de indicadores gerenciais (taxa de ocupação, RevPAR, ticket médio)',
   'Integração com plataformas de reserva online (Booking.com, Airbnb)',
   'Portal de autoatendimento para hóspedes',
@@ -40,10 +40,10 @@ export default function DetalheSistema() {
 
   return (
     <div className="detalhe-sistema-page">
-      <div className="detalhe-sistema-header">
-        <button className="btn-voltar" onClick={() => navigate(-1)}>← Voltar</button>
-        <h1>Detalhes do Sistema</h1>
-      </div>
+      
+      <button className="btn-voltar" onClick={() => navigate(-1)}>← Voltar</button>
+      <h1>Detalhes do Sistema</h1>
+      
 
       <section className="detalhe-sistema-section">
         <h2>Funcionalidades</h2>
