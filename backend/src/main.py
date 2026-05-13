@@ -56,11 +56,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-origins_str = os.getenv("FRONTEND_URL", "*")
+origins_str = os.getenv("FRONTEND_URL", "*").split(',')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origins_str],  # Em produção, substituir por domínios específicos do frontend
+    allow_origins=origins_str,  # Em produção, substituir por domínios específicos do frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -62,8 +62,20 @@ class ProdutoServicoRepository:
         resultado = await self.session.execute(stmt)
         itens = [orm.to_domain() for orm in resultado.scalars().all()]
 
-        nome_locale = "Portuguese_Brazil.1252" if sys.platform == "win32" else "pt_BR.UTF-8"
-        locale.setlocale(locale.LC_COLLATE, nome_locale)
+        locales_para_tentar = [
+        "pt_BR.UTF-8",
+        "pt_BR",
+        "Portuguese_Brazil.1252",  # Windows
+        "C.UTF-8",
+        "",  # padrão do sistema
+        ]
+        
+        for nome_locale in locales_para_tentar:
+            try:
+                locale.setlocale(locale.LC_COLLATE, nome_locale)
+                break
+            except locale.Error:
+                continue
 
         return sorted(itens, key=lambda p: locale.strxfrm(p.descricao))
 
