@@ -47,10 +47,38 @@
 
 .tq-busca__input { max-width: 360px; flex: 1; }
 
+/* ── Wrapper ── */
+.tq-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/* ── Tabela ── */
 .tq-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+}
+
+.tq-table th,
+.tq-table td {
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.tq-table td {
+  color: var(--text-h);
+  vertical-align: middle; /* Garante a centralização vertical nativa da tabela */
+}
+
+/* 1. Borda Inferior aplicada na linha (tr) e não na célula */
+.tq-table tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.tq-table tbody tr:last-child { 
+  border-bottom: none; 
 }
 
 .tq-table th {
@@ -60,26 +88,38 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 10px 14px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
-.tq-table td {
-  padding: 10px 14px;
-  color: var(--text-h);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
+/* 2. Impedimento de Quebra (Ajuste os números das colunas conforme sua tabela TQ) */
+.tq-table td:nth-child(3),
+.tq-table td:nth-child(4) {
+  white-space: nowrap;
 }
 
-.tq-table tbody tr:last-child td { border-bottom: none; }
-.tq-table tbody tr:hover:not(.row-editing) { background: var(--accent-bg); }
+/* Coloque aqui as colunas que PODEM quebrar (ex: Nome, Descrição) */
+.tq-table td:nth-child(1),
+.tq-table td:nth-child(2) {
+  word-break: break-word;
+  white-space: normal;
+}
 
+.tq-table tbody tr:hover:not(.row-editing) { 
+  background: var(--accent-bg); 
+}
+
+/* 3. Centralização e Espaçamento de Botões (Sem Flexbox) */
 .tq-acoes {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  white-space: nowrap; /* Garante que os botões não pulem de linha entre si */
+}
+
+/* Usa margem para dar o gap entre os botões */
+.tq-acoes .btn-acao {
+  margin-right: 8px;
+}
+
+.tq-acoes .btn-acao:last-child {
+  margin-right: 0;
 }
 
 .tq-form-section {

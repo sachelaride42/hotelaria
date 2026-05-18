@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch, getUserRole } from '../services/api'
-import './QuartosAdmin.css'
 import './ReservasAdmin.css'
 
 const STATUS_LABEL = {

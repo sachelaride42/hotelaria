@@ -38,6 +38,8 @@
 /* ── Tabela ── */
 .clientes-tabela-wrap {
   overflow-x: auto;
+  border: 1px solid var(--border); 
+  border-radius: 10px;
 }
 
 .clientes-tabela {
@@ -50,7 +52,26 @@
 .clientes-tabela td {
   padding: 10px 12px;
   text-align: left;
+  vertical-align: middle;
+}
+
+.clientes-tabela tr {
   border-bottom: 1px solid var(--border);
+}
+
+.clientes-tabela tbody tr:last-child {
+  border-bottom: none;
+}
+
+.clientes-tabela td:nth-child(2),
+.clientes-tabela td:nth-child(4),
+.clientes-tabela td:nth-child(5) {
+  white-space: nowrap;
+}
+
+.clientes-tabela td:nth-child(1),
+.clientes-tabela td:nth-child(3) {
+  word-break: break-word;
 }
 
 .clientes-tabela th {
@@ -66,10 +87,15 @@
   background: var(--accent-bg);
 }
 
+.clientes-tabela__acoes .btn-acao {
+  margin-right: 8px;
+}
+
+.clientes-tabela__acoes .btn-acao:last-child {
+  margin-right: 0;
+}
+
 .clientes-tabela__acoes {
-  display: flex;
-  gap: 8px;
-  align-items: center;
   white-space: nowrap;
 }
 

@@ -60,6 +60,27 @@
   table-layout: fixed;
 }
 
+.checkout-table th,
+.checkout-table td {
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.checkout-table td {
+  color: var(--text-h);
+  vertical-align: middle; /* Garante a centralização vertical nativa */
+}
+
+/* Borda inferior na linha (tr) */
+.checkout-table tr {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Remove a borda da última linha */
+.checkout-table tbody tr:last-child {
+  border-bottom: none;
+}
+
 .checkout-table th {
   background: var(--code-bg);
   color: var(--text);
@@ -67,32 +88,36 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 10px 14px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.checkout-table td {
-  padding: 10px 14px;
-  color: var(--text-h);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.checkout-table tbody tr:last-child td { border-bottom: none; }
-.checkout-table tbody tr:hover { background: var(--accent-bg); }
+/* ── Impedimento de Quebra (Ajuste os números das colunas) ── */
+/* Colunas que NÃO quebram (ex: Data, Valor, Qtd) */
+.checkout-table td:nth-child(1),
+.checkout-table td:nth-child(2),
+.checkout-table td:nth-child(4),
+.checkout-table td:nth-child(5) {
+  white-space: nowrap;
+}
 
-.row-diarias td { font-weight: 500; }
+/* Colunas que PODEM quebrar (ex: Descrição do item) */
+.checkout-table td:nth-child(3) {
+  word-break: break-word;
+  white-space: normal;
+}
 
+.checkout-table tbody tr:hover { 
+  background: var(--accent-bg); 
+}
+
+.row-diarias td { 
+  font-weight: 500; 
+}
+
+/* Classe utilitária específica que você já tinha */
 .checkout-table .col-num {
   text-align: right;
-  white-space: nowrap;
+  white-space: nowrap; /* Impede a quebra específica nas colunas de número */
 }
 
 .table-empty {

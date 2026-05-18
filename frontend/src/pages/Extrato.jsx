@@ -22,192 +22,33 @@ function calcDiarias(hospedagem, tipo) {
   return { dias, diaria, total: dias * diaria }
 }
 
-function ItemRow({ it, ativo, onSaved, onDeleted }) {
-  const [editing, setEditing]               = useState(false)
-  const [descricao, setDescricao]           = useState(it.descricao)
-  const [quantidade, setQtd]                = useState(String(it.quantidade))
-  const [valorUnit, setValor]               = useState(String(it.valor_unitario))
-  const [salvando, setSalvando]             = useState(false)
-  const [excluindo, setExcluindo]           = useState(false)
-  const [confirmandoExcluir, setConfirmando] = useState(false)
-  const [erro, setErro]                     = useState(null)
-
-  function cancelEdit() {
-    setDescricao(it.descricao)
-    setQtd(String(it.quantidade))
-    setValor(String(it.valor_unitario))
-    setErro(null)
-    setEditing(false)
-  }
-
-  async function handleSave() {
-    const qtd = parseInt(quantidade, 10)
-    const val = parseFloat(valorUnit)
-    if (!descricao.trim() || qtd <= 0 || isNaN(qtd) || val <= 0 || isNaN(val)) {
-      setErro('Preencha todos os campos corretamente.')
-      return
-    }
-    setSalvando(true)
-    setErro(null)
-    try {
-      const atualizado = await apiFetch(`/itens-consumo/${it.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ descricao: descricao.trim(), quantidade: qtd, valor_unitario: Math.round(val * 100) / 100 }),
-      })
-      onSaved(atualizado)
-      setEditing(false)
-    } catch (err) {
-      setErro(err.message ?? 'Falha ao salvar o item. Tente novamente.')
-    } finally {
-      setSalvando(false)
-    }
-  }
-
-  async function handleDelete() {
-    setExcluindo(true)
-    try {
-      await apiFetch(`/itens-consumo/${it.id}`, { method: 'DELETE' })
-      onDeleted(it.id)
-    } catch (err) {
-      setErro(err.message ?? 'Falha ao excluir o item. Tente novamente.')
-      setExcluindo(false)
-      setConfirmando(false)
-    }
-  }
-
-  const previewVal = parseFloat(valorUnit)
-  const previewQtd = parseInt(quantidade, 10)
-  const previewOk  = !isNaN(previewVal) && !isNaN(previewQtd) && previewVal > 0 && previewQtd > 0
-
-  if (editing) {
-    return (
-      <>
-        <tr className="row-editing">
-          <td>Produto / Serviço</td>
-          <td>{fmtData(it.data_registro)}</td>
-          <td>
-            <input
-              className="cell-input"
-              value={descricao}
-              onChange={e => setDescricao(e.target.value)}
-              autoFocus
-              aria-label="Descrição do item"
-            />
-          </td>
-          <td className="col-num">
-            <input
-              className="cell-input cell-input--num"
-              type="number"
-              min="1"
-              value={quantidade}
-              onChange={e => setQtd(e.target.value)}
-              aria-label="Quantidade"
-            />
-          </td>
-          <td className="col-num">
-            <input
-              className="cell-input cell-input--num"
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={valorUnit}
-              onChange={e => setValor(e.target.value)}
-              aria-label="Valor unitário"
-            />
-          </td>
-          <td className="col-num">
-            {previewOk ? formatBRL(previewQtd * previewVal) : '—'}
-          </td>
-          <td className="col-acoes">
-            <div className="extrato-acoes">
-              <button
-                className="btn-acao"
-                onClick={handleSave}
-                disabled={salvando}
-              >
-                {salvando ? 'Salvando…' : 'Salvar'}
-              </button>
-              <button
-                className="btn-acao btn-acao--aviso"
-                onClick={cancelEdit}
-                disabled={salvando}
-              >
-                Cancelar
-              </button>
-            </div>
-          </td>
-        </tr>
-        {erro && (
-          <tr className="row-erro">
-            <td colSpan={7}>{erro}</td>
-          </tr>
-        )}
-      </>
-    )
-  }
-
+/* ── COMPONENTE DA LINHA ── */
+function ItemRow({ it, ativo, onPedirEdicao, onPedirExclusao }) {
   return (
-    <>
-      <tr>
-        <td>Produto / Serviço</td>
-        <td>{fmtData(it.data_registro)}</td>
-        <td>{it.descricao}</td>
-        <td className="col-num">{it.quantidade}</td>
-        <td className="col-num">{formatBRL(it.valor_unitario)}</td>
-        <td className="col-num">{formatBRL(it.quantidade * it.valor_unitario)}</td>
-        <td className="col-acoes">
-          {ativo && (
-            <div className="extrato-acoes">
-              {confirmandoExcluir ? (
-                <>
-                  <span style={{ fontSize: '12px', color: 'var(--text)', whiteSpace: 'nowrap' }}>
-                    Excluir item?
-                  </span>
-                  <button
-                    className="btn-acao btn-acao--perigo"
-                    onClick={handleDelete}
-                    disabled={excluindo}
-                  >
-                    {excluindo ? 'Excluindo…' : 'Confirmar'}
-                  </button>
-                  <button
-                    className="btn-acao"
-                    onClick={() => setConfirmando(false)}
-                    disabled={excluindo}
-                  >
-                    Cancelar
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="btn-acao"
-                    onClick={() => setEditing(true)}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className="btn-acao btn-acao--perigo"
-                    onClick={() => setConfirmando(true)}
-                  >
-                    Excluir
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </td>
-      </tr>
-      {erro && (
-        <tr className="row-erro">
-          <td colSpan={7}>{erro}</td>
-        </tr>
-      )}
-    </>
+    <tr>
+      <td>Produto / Serviço</td>
+      <td>{fmtData(it.data_registro)}</td>
+      <td>{it.descricao}</td>
+      <td className="col-num">{it.quantidade}</td>
+      <td className="col-num">{formatBRL(it.valor_unitario)}</td>
+      <td className="col-num">{formatBRL(it.quantidade * it.valor_unitario)}</td>
+      <td className="col-acoes">
+        {ativo && (
+          <div className="extrato-acoes">
+            <button className="btn-acao" onClick={() => onPedirEdicao(it)}>
+              Editar
+            </button>
+            <button className="btn-acao btn-acao--perigo" onClick={() => onPedirExclusao(it)}>
+              Excluir
+            </button>
+          </div>
+        )}
+      </td>
+    </tr>
   )
 }
 
+/* ── COMPONENTE PRINCIPAL ── */
 export default function Extrato() {
   const { hospedagemId } = useParams()
   const navigate = useNavigate()
@@ -221,7 +62,18 @@ export default function Extrato() {
   const [loading, setLoading]       = useState(true)
   const [error, setError]           = useState(null)
 
-  // Painel de lançamento
+  // Estados para o modal de exclusão
+  const [confirmandoExcluir, setConfirmandoExcluir] = useState(null)
+  const [excluindo, setExcluindo]               = useState(false)
+  const [erroExcluir, setErroExcluir]           = useState(null)
+
+  // Estados para o modal de edição
+  const [editando, setEditando]                 = useState(null) // guarda o objeto completo do item sendo editado
+  const [formEdit, setFormEdit]                 = useState({ descricao: '', quantidade: '', valor_unitario: '' })
+  const [salvandoEdit, setSalvandoEdit]         = useState(false)
+  const [erroEdit, setErroEdit]                 = useState(null)
+
+  // Painel de lançamento (Novos itens)
   const [avulso, setAvulso]         = useState(false)
   const [produtoId, setProdutoId]   = useState('')
   const [nomeAvulso, setNomeAvulso] = useState('')
@@ -327,6 +179,69 @@ export default function Extrato() {
     }
   }
 
+  /* ── Ações de Edição (Modal) ── */
+  function abrirModalEdicao(item) {
+    setEditando(item)
+    setFormEdit({
+      descricao: item.descricao,
+      quantidade: String(item.quantidade),
+      valor_unitario: String(item.valor_unitario)
+    })
+    setErroEdit(null)
+  }
+
+  function handleFormEditChange(e) {
+    const { name, value } = e.target
+    setFormEdit(prev => ({ ...prev, [name]: value }))
+  }
+
+  async function executarEdicao(e) {
+    e.preventDefault()
+    const qEd = parseInt(formEdit.quantidade, 10)
+    const vEd = parseFloat(formEdit.valor_unitario)
+
+    if (!formEdit.descricao.trim() || qEd <= 0 || isNaN(qEd) || vEd <= 0 || isNaN(vEd)) {
+      setErroEdit('Preencha todos os campos corretamente.')
+      return
+    }
+
+    setSalvandoEdit(true)
+    setErroEdit(null)
+    try {
+      const atualizado = await apiFetch(`/itens-consumo/${editando.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          descricao: formEdit.descricao.trim(), 
+          quantidade: qEd, 
+          valor_unitario: Math.round(vEd * 100) / 100 
+        }),
+      })
+      setItens(prev => prev.map(i => i.id === atualizado.id ? atualizado : i))
+      setEditando(null)
+    } catch (err) {
+      setErroEdit(err.message ?? 'Falha ao salvar o item. Tente novamente.')
+    } finally {
+      setSalvandoEdit(false)
+    }
+  }
+
+  /* ── Ações de Exclusão (Modal) ── */
+  async function executarExclusao() {
+    if (!confirmandoExcluir) return
+    setExcluindo(true)
+    setErroExcluir(null)
+    try {
+      await apiFetch(`/itens-consumo/${confirmandoExcluir.id}`, { method: 'DELETE' })
+      setItens(prev => prev.filter(i => i.id !== confirmandoExcluir.id))
+      setConfirmandoExcluir(null)
+    } catch (err) {
+      setErroExcluir(err.message ?? 'Falha ao excluir o item. Tente novamente.')
+    } finally {
+      setExcluindo(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="page-feedback" role="status" aria-live="polite">
@@ -349,6 +264,13 @@ export default function Extrato() {
   const diarias = calcDiarias(hospedagem, tipo)
   const subtotalConsumo = itens.reduce((acc, it) => acc + it.quantidade * it.valor_unitario, 0)
   const subtotalTotal   = (diarias?.total ?? 0) + subtotalConsumo
+
+  // Preview dinâmico para o modal de edição
+  const previewQtdEdit = parseInt(formEdit.quantidade, 10)
+  const previewValEdit = parseFloat(formEdit.valor_unitario)
+  const previewTotalEdit = !isNaN(previewQtdEdit) && !isNaN(previewValEdit) && previewQtdEdit > 0 && previewValEdit > 0
+    ? previewQtdEdit * previewValEdit
+    : null
 
   return (
     <div className="extrato-page">
@@ -407,12 +329,8 @@ export default function Extrato() {
                   key={it.id}
                   it={it}
                   ativo={ativo}
-                  onSaved={atualizado =>
-                    setItens(prev => prev.map(i => i.id === atualizado.id ? atualizado : i))
-                  }
-                  onDeleted={id =>
-                    setItens(prev => prev.filter(i => i.id !== id))
-                  }
+                  onPedirEdicao={abrirModalEdicao}
+                  onPedirExclusao={itemCompleto => setConfirmandoExcluir(itemCompleto)}
                 />
               ))}
             </tbody>
@@ -429,11 +347,7 @@ export default function Extrato() {
 
           <form onSubmit={handleLancar} noValidate>
             <label className="toggle-label">
-              <input
-                type="checkbox"
-                checked={avulso}
-                onChange={handleAvulsoToggle}
-              />
+              <input type="checkbox" checked={avulso} onChange={handleAvulsoToggle} />
               Item avulso?
             </label>
 
@@ -511,11 +425,7 @@ export default function Extrato() {
               <p className="erro-lanc" role="alert">{erroLanc}</p>
             )}
 
-            <button
-              type="submit"
-              className="btn-lancar"
-              disabled={enviando || preview === null}
-            >
+            <button type="submit" className="btn-lancar" disabled={enviando || preview === null}>
               {enviando ? 'Lançando…' : 'Lançar na Conta'}
             </button>
           </form>
@@ -526,6 +436,122 @@ export default function Extrato() {
             </div>
           )}
         </section>
+      )}
+
+      {/* ── MODAL DE EDIÇÃO ── */}
+      {editando && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Editar item"
+          onClick={e => { if (e.target === e.currentTarget) setEditando(null) }}
+        >
+          <div className="modal">
+            <div className="modal__header">
+              <h2 className="modal__titulo">Editar item do extrato</h2>
+              <button className="modal__fechar" onClick={() => setEditando(null)} aria-label="Fechar">✕</button>
+            </div>
+            
+            <form onSubmit={executarEdicao} noValidate>
+              <div className="modal__corpo" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="edit-descricao">Descrição</label>
+                  <input
+                    id="edit-descricao"
+                    name="descricao"
+                    className="form-input"
+                    value={formEdit.descricao}
+                    onChange={handleFormEditChange}
+                    required
+                  />
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="edit-valor">Valor Unitário (R$)</label>
+                    <input
+                      id="edit-valor"
+                      name="valor_unitario"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      className="form-input"
+                      value={formEdit.valor_unitario}
+                      onChange={handleFormEditChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="edit-quantidade">Quantidade</label>
+                    <input
+                      id="edit-quantidade"
+                      name="quantidade"
+                      type="number"
+                      min="1"
+                      step="1"
+                      className="form-input"
+                      value={formEdit.quantidade}
+                      onChange={handleFormEditChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {previewTotalEdit !== null && (
+                  <p className="preview-total" aria-live="polite" style={{ margin: '4px 0 0' }}>
+                    Total estimado: <strong>{formatBRL(previewTotalEdit)}</strong>
+                  </p>
+                )}
+
+                {erroEdit && (
+                  <p className="page-erro" role="alert" style={{ margin: '8px 0 0' }}>{erroEdit}</p>
+                )}
+              </div>
+
+              <div className="modal__footer">
+                <button type="button" className="btn btn--ghost" onClick={() => setEditando(null)} disabled={salvandoEdit}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn btn--primary" disabled={salvandoEdit}>
+                  {salvandoEdit ? 'Salvando…' : 'Salvar alterações'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL DE CONFIRMAÇÃO DE EXCLUSÃO ── */}
+      {confirmandoExcluir && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirmar exclusão"
+          onClick={e => { if (e.target === e.currentTarget) { setConfirmandoExcluir(null); setErroExcluir(null) } }}
+        >
+          <div className="modal modal--pequeno">
+            <div className="modal__header">
+              <h2 className="modal__titulo">Excluir item do extrato</h2>
+              <button className="modal__fechar" onClick={() => { setConfirmandoExcluir(null); setErroExcluir(null) }} aria-label="Fechar">✕</button>
+            </div>
+            <p className="modal__corpo">
+              Tem certeza que deseja remover o item <strong>{confirmandoExcluir.descricao}</strong> do extrato? Esta ação não pode ser desfeita.
+            </p>
+            {erroExcluir && (
+              <p className="page-erro" role="alert" style={{ margin: '0 24px' }}>{erroExcluir}</p>
+            )}
+            <div className="modal__footer">
+              <button className="btn btn--ghost" onClick={() => { setConfirmandoExcluir(null); setErroExcluir(null) }}>
+                Cancelar
+              </button>
+              <button className="btn btn--perigo" onClick={executarExclusao} disabled={excluindo}>
+                {excluindo ? 'Excluindo…' : 'Confirmar exclusão'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
