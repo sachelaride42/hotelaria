@@ -22,17 +22,20 @@ function toDatetimeLocal(date) {
 // Replica a lógica do backend (calculadora_diarias.py)
 function calcDiariasFlexivel(checkin, checkout, valorDiaria) {
   const ciDay = new Date(new Date(checkin).toDateString())
-  const coDay = new Date(checkout.toDateString())
+  const coDay = new Date(new Date(checkout).toDateString())
   const dias = Math.max(1, Math.round((coDay - ciDay) / 86400000))
   let total = dias * valorDiaria
 
+  const mesmoDia = coDay.getTime() === ciDay.getTime()
   const hora = checkout.getHours() + checkout.getMinutes() / 60
-  if (hora > 12) {
+
+  if (!mesmoDia && hora > 12) {
     const extra = hora - 12
     if (extra <= 3)      total += valorDiaria * 0.25
     else if (extra <= 6) total += valorDiaria * 0.50
     else                 total += valorDiaria
   }
+
   return { dias, total: Math.round(total * 100) / 100 }
 }
 
@@ -116,6 +119,10 @@ export default function Checkout() {
 
   // Calcula surcharge para exibição
   function getSurchargeDesc() {
+    const ciDay = new Date(new Date(hospedagem.data_checkin).toDateString())
+    const coDay = new Date(new Date(checkoutTime).toDateString())
+    if (ciDay.getTime() === coDay.getTime()) return null
+
     const hora = checkoutTime.getHours() + checkoutTime.getMinutes() / 60
     if (hora <= 12) return null
     const extra = hora - 12
