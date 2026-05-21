@@ -60,7 +60,9 @@ export default function GradeOcupados({ titulo, destino }) {
       apiFetch('/clientes/').catch(() => []),
     ])
       .then(([quartosData, tiposData, hospedagensData, clientesData]) => {
-        setQuartos(quartosData)
+        setQuartos([...quartosData].sort((a, b) =>
+          String(a.numero).localeCompare(String(b.numero), undefined, { numeric: true, sensitivity: 'base' })
+        ))
         const tiposMap = {}
         tiposData.forEach(t => { tiposMap[t.id] = t.nome })
         setTipos(tiposMap)

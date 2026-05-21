@@ -25,9 +25,12 @@ function QuartosAdmin() {
 
   const role = getUserRole()
 
-  const quartosFiltrados = filtroTipo
-    ? quartos.filter(q => String(q.tipo_quarto_id) === filtroTipo)
-    : quartos
+  const quartosFiltrados = (filtroTipo
+  ? quartos.filter(q => String(q.tipo_quarto_id) === filtroTipo)
+  : quartos
+  ).slice().sort((a, b) =>
+  String(a.numero).localeCompare(String(b.numero), undefined, { numeric: true, sensitivity: 'base' })
+  )
 
   useEffect(() => {
     if (role !== 'GERENTE') return
