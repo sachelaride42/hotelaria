@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timezone, timedelta
 from enum import Enum
 from typing import Optional
 from decimal import Decimal
@@ -24,7 +24,7 @@ class Reserva:
     data_saida: date
     valor_total_previsto: Decimal = Decimal("0.00")
     status: StatusReserva = StatusReserva.CONFIRMADA
-    data_criacao: datetime = field(default_factory=datetime.now)
+    data_criacao: datetime = field(default_factory=lambda: datetime.now(tz=timezone(timedelta(hours=-4))))
     id: Optional[int] = None
 
     def __post_init__(self):

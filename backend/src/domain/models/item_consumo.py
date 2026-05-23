@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from typing import Optional
 
@@ -15,7 +15,7 @@ class ItemConsumo:
     quantidade: int
     valor_unitario: Decimal
 
-    data_registro: datetime = field(default_factory=datetime.now)
+    data_registro: datetime = field(default_factory=lambda: datetime.now(tz=timezone(timedelta(hours=-4))))
     id: Optional[int] = None
 
     def __post_init__(self):

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from enum import Enum
 from typing import Optional
@@ -18,7 +18,7 @@ class Pagamento:
     hospedagem_id: int
     valor_pago: Decimal
     forma_pagamento: FormaDePagamento
-    data_hora_pagamento: datetime = field(default_factory=datetime.now)
+    data_hora_pagamento: datetime = field(default_factory=lambda: datetime.now(tz=timezone(timedelta(hours=-4))))
     id: Optional[int] = None
 
     def __post_init__(self):
