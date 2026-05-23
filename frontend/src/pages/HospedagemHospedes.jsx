@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { apiFetch } from '../services/api'
 import './HospedagemHospedes.css'
+import '../utils/masks'
+import { maskTelefone } from '../utils/masks'
 
 function InfoRow({ label, value }) {
   return (
@@ -72,7 +74,7 @@ export default function HospedagemHospedes() {
         <dl className="hh-lista">
           <InfoRow label="Nome" value={cliente.nome} />
           <InfoRow label="CPF" value={formatCPF(cliente.cpf)} />
-          <InfoRow label="Telefone" value={cliente.telefone} />
+          <InfoRow label="Telefone" value={maskTelefone(cliente.telefone)} />
           <InfoRow label="E-mail" value={cliente.email} />
         </dl>
       </section>

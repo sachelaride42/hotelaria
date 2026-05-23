@@ -131,9 +131,12 @@ function Dashboard() {
       .finally(() => setLoading(false))
   }, [navigate])
 
-  const quartosFiltrados = filtro
-    ? quartos.filter(q => q.status_ocupacao === filtro)
-    : quartos
+  const quartosFiltrados = (filtro
+  ? quartos.filter(q => q.status_ocupacao === filtro)
+  : quartos
+  ).slice().sort((a, b) =>
+  String(a.numero).localeCompare(String(b.numero), undefined, { numeric: true, sensitivity: 'base' })
+  )
 
   const contagens = {
     total: quartos.length,

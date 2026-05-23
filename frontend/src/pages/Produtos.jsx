@@ -19,10 +19,13 @@ function Produtos() {
   const [form, setForm]                         = useState(FORM_INICIAL)
   const [salvando, setSalvando]                 = useState(false)
   const [erroForm, setErroForm]                 = useState(null)
+  
+  // Estados corrigidos para isolamento do erro de exclusão
   const [confirmandoExcluir, setConfirmandoExcluir] = useState(null)
   const [excluindo, setExcluindo]               = useState(false)
+  const [erroExcluir, setErroExcluir]           = useState(null)
+  
   const navigate = useNavigate()
-
   const role = getUserRole()
 
   const itensFiltrados = filtro.trim()
@@ -98,19 +101,21 @@ function Produtos() {
     }
   }
 
+  // Função corrigida: mantém o erro isolado no escopo do modal
   async function excluir() {
     if (!confirmandoExcluir) return
     setExcluindo(true)
+    setErroExcluir(null)
     try {
       await apiFetch(`/catalogo/${confirmandoExcluir}`, { method: 'DELETE' })
       setItens(prev => prev.filter(i => i.id !== confirmandoExcluir))
       if (editando?.id === confirmandoExcluir) cancelar()
+      setConfirmandoExcluir(null) // Só fecha o modal em caso de sucesso
     } catch (err) {
       if (err.status === 401) navigate('/login')
-      else setError(err.message)
+      else setErroExcluir(err.message) // O erro é exibido dentro do modal
     } finally {
       setExcluindo(false)
-      setConfirmandoExcluir(null)
     }
   }
 
@@ -272,25 +277,28 @@ function Produtos() {
         </>
       )}
 
-      {/* Modal excluir */}
+      {/* Modal excluir (Atualizado com renderização de erro interno) */}
       {confirmandoExcluir && (
         <div
           className="modal-overlay"
           role="dialog"
           aria-modal="true"
           aria-label="Confirmar exclusão"
-          onClick={e => { if (e.target === e.currentTarget) setConfirmandoExcluir(null) }}
+          onClick={e => { if (e.target === e.currentTarget) { setConfirmandoExcluir(null); setErroExcluir(null) } }}
         >
           <div className="modal modal--pequeno">
             <div className="modal__header">
               <h2 className="modal__titulo">Excluir item</h2>
-              <button className="modal__fechar" onClick={() => setConfirmandoExcluir(null)} aria-label="Fechar">✕</button>
+              <button className="modal__fechar" onClick={() => { setConfirmandoExcluir(null); setErroExcluir(null) }} aria-label="Fechar">✕</button>
             </div>
             <p className="modal__corpo">
               Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.
             </p>
+            {erroExcluir && (
+              <p className="page-erro" role="alert" style={{ margin: '0 24px 12px' }}>{erroExcluir}</p>
+            )}
             <div className="modal__footer">
-              <button className="btn btn--ghost" onClick={() => setConfirmandoExcluir(null)}>Cancelar</button>
+              <button className="btn btn--ghost" onClick={() => { setConfirmandoExcluir(null); setErroExcluir(null) }}>Cancelar</button>
               <button className="btn btn--perigo" onClick={excluir} disabled={excluindo}>
                 {excluindo ? 'Excluindo…' : 'Excluir'}
               </button>

@@ -57,10 +57,38 @@
 
 .us-filtro__select { max-width: 180px; }
 
+/* ── Wrapper (Bordas arredondadas) ── */
+.us-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/* ── Tabela ── */
 .us-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+}
+
+.us-table th,
+.us-table td {
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.us-table td {
+  color: var(--text-h);
+  vertical-align: middle; /* Centralização de botões nativa */
+}
+
+/* Borda inferior aplicada no tr */
+.us-table tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.us-table tbody tr:last-child { 
+  border-bottom: none; 
 }
 
 .us-table th {
@@ -70,22 +98,27 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 10px 14px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
-.us-table td {
-  padding: 10px 14px;
-  color: var(--text-h);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
+/* ── Impedimento de quebra ── */
+/* Coloque aqui as colunas que NÃO podem quebrar (ex: Cargo, Status, Ações) */
+.us-table td:nth-child(3) {
+  white-space: nowrap;
 }
 
-.us-table tbody tr:last-child td { border-bottom: none; }
-.us-table tbody tr:hover:not(.row-editing) { background: var(--accent-bg); }
+/* Coloque aqui as colunas que PODEM quebrar (ex: Nome, Email) */
+.us-table td:nth-child(1),
+.us-table td:nth-child(2) {
+  word-break: break-word;
+  white-space: normal;
+}
 
+.us-table tbody tr:hover:not(.row-editing) { 
+  background: var(--accent-bg); 
+}
+
+/* ── Badges ── */
 .us-badge {
   display: inline-block;
   font-size: 11px;
@@ -99,10 +132,19 @@
 .us-badge--gerente      { background: #f3e8ff; color: #7e22ce; }
 .us-badge--recepcionista { background: #e0e7ff; color: #3730a3; }
 
+/* ── Ações na tabela ── */
 .us-acoes {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  /* Flexbox removido para não quebrar a centralização da tabela */
+  white-space: nowrap; 
+}
+
+/* Espaçamento entre os botões com margin em vez de gap */
+.us-acoes .btn-acao {
+  margin-right: 8px;
+}
+
+.us-acoes .btn-acao:last-child {
+  margin-right: 0;
 }
 
 .us-proprio-usuario {

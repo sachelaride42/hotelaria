@@ -80,7 +80,7 @@ export default function Clientes() {
       nome: cliente.nome,
       cpf: cliente.cpf ? maskCPF(cliente.cpf) : '',
       email: cliente.email ?? '',
-      telefone: cliente.telefone ?? '',
+      telefone: cliente.telefone ? maskTelefone(cliente.telefone) : '',
     })
     setErroForm('')
     document.getElementById('form-cliente')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -197,7 +197,7 @@ export default function Clientes() {
                     <td>{c.nome}</td>
                     <td>{c.cpf ? maskCPF(c.cpf) : '—'}</td>
                     <td>{c.email || '—'}</td>
-                    <td>{c.telefone || '—'}</td>
+                    <td>{c.telefone ? maskTelefone(c.telefone) : '—'}</td>
                     <td className="clientes-tabela__acoes">
                       <button
                         className="btn-acao"
