@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from enum import Enum
 from typing import Optional
@@ -23,7 +23,7 @@ class Hospedagem:
     # Vínculo com reserva; None em check-ins diretos (walk-in)
     reserva_id: Optional[int] = None
 
-    data_checkin: datetime = field(default_factory=datetime.now)
+    data_checkin: datetime = field(default_factory=lambda: datetime.now(tz=timezone(timedelta(hours=-4))))
     data_checkout_real: Optional[datetime] = None
     valor_total: Decimal = Decimal("0.00")
     valor_diaria_negociado: Optional[Decimal] = None
